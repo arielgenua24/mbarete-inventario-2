@@ -1,0 +1,452 @@
+/* ========================================
+   MI COMPRA - Apple Minimalist Design
+   ======================================== */
+
+:root {
+  --apple-black: #1d1d1f;
+  --apple-gray-1: #86868b;
+  --apple-gray-2: #f5f5f7;
+  --apple-gray-3: #e8e8ed;
+  --apple-white: #ffffff;
+  --apple-blue: #0071e3;
+  --apple-green: #34c759;
+}
+
+.mi-compra-container {
+  min-height: 100vh;
+  background: var(--apple-white);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Loading */
+.mi-compra-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
+  background: var(--apple-white);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 2.5px solid var(--apple-gray-3);
+  border-top-color: var(--apple-black);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.mi-compra-loading p {
+  color: var(--apple-gray-1);
+  font-size: 17px;
+  font-weight: 400;
+}
+
+/* Error */
+.mi-compra-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  text-align: center;
+  background: var(--apple-white);
+}
+
+.error-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--apple-gray-2);
+  color: var(--apple-gray-1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.mi-compra-error h2 {
+  color: var(--apple-black);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+}
+
+.mi-compra-error p {
+  color: var(--apple-gray-1);
+  font-size: 17px;
+  margin: 0;
+}
+
+.error-hint {
+  margin-top: 24px !important;
+  font-size: 15px;
+  color: var(--apple-gray-1) !important;
+}
+
+/* Header */
+.mi-compra-header {
+  background: var(--apple-white);
+  padding: 48px 24px 32px;
+  text-align: center;
+  border-bottom: 1px solid var(--apple-gray-3);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.brand-icon {
+  font-size: 24px;
+}
+
+.brand-logo h1 {
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--apple-black);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.header-subtitle {
+  font-size: 15px;
+  color: var(--apple-gray-1);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Content */
+.mi-compra-content {
+  padding: 32px 24px 48px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Order Info Card */
+.order-info-card {
+  background: var(--apple-gray-2);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.order-code-section {
+  text-align: center;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--apple-gray-3);
+}
+
+.order-code-section .label {
+  display: block;
+  font-size: 12px;
+  color: var(--apple-gray-1);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.order-code {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--apple-black);
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--apple-black);
+}
+
+.meta-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.order-status {
+  text-align: center;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.order-status.status-listo-para-despachar {
+  background: rgba(52, 199, 89, 0.12);
+  color: var(--apple-green);
+}
+
+.order-status.status-entregado {
+  background: rgba(0, 113, 227, 0.1);
+  color: var(--apple-blue);
+}
+
+.order-status.status-pendiente,
+.order-status:not([class*="status-listo"]):not([class*="status-entregado"]) {
+  background: var(--apple-gray-3);
+  color: var(--apple-gray-1);
+}
+
+/* Products Section */
+.products-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--apple-gray-1);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 0 0 16px 0;
+}
+
+.products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Product Card - Airbnb style */
+.product-card {
+  background: var(--apple-white);
+  border: 1px solid var(--apple-gray-3);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Product Header */
+.product-header {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  align-items: center;
+}
+
+/* Product Image */
+.product-image-container {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--apple-gray-2);
+  position: relative;
+}
+
+.product-image-container.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.product-image-container.clickable:hover {
+  transform: scale(1.03);
+}
+
+.product-image-container.clickable:active {
+  transform: scale(0.98);
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--apple-gray-2);
+  font-size: 28px;
+}
+
+/* Zoom hint icon */
+.zoom-hint {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.product-image-container.clickable:hover .zoom-hint {
+  opacity: 1;
+}
+
+.product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--apple-black);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+}
+
+.product-variants {
+  font-size: 14px;
+  color: var(--apple-gray-1);
+  margin: 0;
+}
+
+/* Product Pricing - Detailed breakdown */
+.product-pricing {
+  background: var(--apple-gray-2);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price-label {
+  font-size: 14px;
+  color: var(--apple-gray-1);
+}
+
+.price-value {
+  font-size: 14px;
+  color: var(--apple-black);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.quantity-badge {
+  background: var(--apple-white);
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.subtotal-row {
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--apple-gray-3);
+}
+
+.subtotal-row .price-label {
+  font-weight: 500;
+  color: var(--apple-black);
+}
+
+.subtotal-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--apple-black);
+}
+
+/* Total Section */
+.total-section {
+  background: var(--apple-black);
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.total-label {
+  font-size: 17px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.total-amount {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--apple-white);
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thank you */
+.thank-you-section {
+  text-align: center;
+  padding: 0;
+}
+
+.thank-you-section p {
+  margin: 0;
+  font-size: 17px;
+  color: var(--apple-black);
+  font-weight: 500;
+}
+
+.thank-you-section .small-text {
+  font-size: 14px;
+  color: var(--apple-gray-1);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 390px) {
+  .mi-compra-header {
+    padding: 40px 20px 28px;
+  }
+
+  .mi-compra-content {
+    padding: 24px 20px 40px;
+  }
+
+  .order-code {
+    font-size: 28px;
+  }
+
+  .total-amount {
+    font-size: 24px;
+  }
+}

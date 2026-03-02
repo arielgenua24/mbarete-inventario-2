@@ -1,0 +1,210 @@
+.ed-container {
+  padding: 20px;
+  min-height: 100vh;
+  background-color: #f5f5f7;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1d1d1f;
+}
+
+.ed-header-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.ed-back-btn {
+  background: none;
+  border: none;
+  color: #007aff;
+  font-size: 17px;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 16px;
+}
+
+.ed-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.ed-total-banner {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ed-banner-label {
+  font-size: 13px;
+  color: #86868b;
+  margin-bottom: 4px;
+}
+
+.ed-banner-amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.ed-list {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ed-list-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e5e5e5;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ed-list-item:last-child {
+  border-bottom: none;
+}
+
+.ed-list-item:active {
+  background-color: #f5f5f7;
+}
+
+.ed-item-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ed-item-name {
+  font-size: 17px;
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+.ed-item-sub {
+  font-size: 13px;
+  color: #86868b;
+  margin-top: 2px;
+}
+
+.ed-item-amount {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-right: 8px;
+}
+
+.ed-chevron {
+  color: #c7c7cc;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.ed-empty {
+  padding: 40px;
+  text-align: center;
+  color: #86868b;
+}
+
+/* Detail View Specifics */
+.ed-detail-view {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.ed-order-summary {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ed-order-id {
+  font-family: monospace;
+  color: #86868b;
+}
+
+.ed-order-total {
+  font-size: 20px;
+  font-weight: 700;
+  color: #007aff;
+}
+
+/* Customer Details */
+.ed-customer-details {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ed-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #86868b;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ed-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f7;
+}
+
+.ed-detail-row:last-child {
+  border-bottom: none;
+}
+
+.ed-detail-label {
+  color: #86868b;
+  font-size: 15px;
+}
+
+.ed-detail-value {
+  font-weight: 500;
+  color: #1d1d1f;
+  font-size: 15px;
+  text-align: right;
+}
+
+/* Product Image */
+.ed-product-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 12px;
+  background-color: #f5f5f7;
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+
+.ed-product-image:hover {
+  transform: scale(1.05);
+}

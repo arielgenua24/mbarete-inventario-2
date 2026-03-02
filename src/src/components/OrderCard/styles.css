@@ -1,0 +1,132 @@
+/* styles.css */
+.cart-order-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin: 16px 0;
+  transition: transform 0.2s ease-in-out;
+  height: auto;
+  min-height: 380px;
+}
+
+.cart-card-content {
+  display: flex;
+  height: auto;
+  min-height: 230px;
+}
+
+.cart-order-card:hover {
+  transform: scale(1.02);
+}
+
+.cart-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.cart-card-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.cart-product-code {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.cart-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.cart-info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+/* New Stock Indicator Styles */
+.cart-info-item.stock-low {
+  background-color: #ffe6e6;
+  /* Light red */
+  border: 1px solid #ffcccc;
+}
+
+.cart-info-item.stock-low .cart-info-value {
+  color: #cc0000;
+  font-weight: bold;
+}
+
+.cart-info-item.stock-good {
+  background-color: #e6ffed;
+  /* Light green */
+  border: 1px solid #ccffda;
+}
+
+.cart-info-item.stock-good .cart-info-value {
+  color: #008069;
+  /* WhatsApp Green Dark */
+  font-weight: bold;
+}
+
+
+.cart-info-label {
+  font-weight: bold;
+  color: #555;
+}
+
+.cart-info-value {
+  color: #222;
+}
+
+.cart-card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 32px;
+}
+
+.cart-modify-button,
+.cart-delete-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.cart-modify-button {
+  background: #fff;
+  border: 4px solid #f1f1f1;
+  color: #333;
+}
+
+.cart-delete-button {
+  background: #ff4d4d;
+  color: #fff;
+}
+
+.cart-modify-button:hover {
+  background: #035af0;
+  color: #fff;
+}
+
+.cart-delete-button:hover {
+  background: #cc0000;
+}
+
+.cart-card-footer {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 12px;
+}

@@ -1,0 +1,16 @@
+# ngrok configuration for Reina Chura
+# Usage: ngrok start --all --config ngrok.yml
+
+version: "2"
+authtoken: YOUR_NGROK_AUTHTOKEN  # Get from https://dashboard.ngrok.com/get-started/your-authtoken
+
+tunnels:
+  frontend:
+    addr: 5173
+    proto: http
+    # This will be your main URL
+
+  api:
+    addr: 3001
+    proto: http
+    # This will be your API URL

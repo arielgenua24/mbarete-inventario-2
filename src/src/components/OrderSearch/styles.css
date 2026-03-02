@@ -1,0 +1,218 @@
+/* Container styles */
+.order-search-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Search header styles */
+.order-search-container .search-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Search wrapper styles */
+.order-search-container .search-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.order-search-container .search-wrapper.focused {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
+}
+
+.order-search-container .search-icon {
+  color: #666;
+  margin-right: 12px;
+}
+
+.order-search-container .search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  outline: none;
+  padding: 8px 0;
+}
+
+.order-search-container .clear-search-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.order-search-container .clear-search-btn:hover {
+  background-color: #eee;
+}
+
+/* Filter button styles */
+.order-search-container .filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.order-search-container .filter-btn.active {
+  background: #f0f7ff;
+  border-color: #0066cc;
+  color: #0066cc;
+}
+
+/* Results container styles */
+.order-search-container .results-container {
+  display: block;
+  height: 1px;
+  min-height: 1px;
+  max-height: 1px;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: max-height 0.28s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.order-search-container .results-container.visible {
+  height: auto;
+  min-height: 0;
+  max-height: min(65vh, 720px);
+  overflow-y: auto;
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.order-search-container .results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Result item styles */
+.order-search-container .result-item {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+.order-search-container .result-item:hover {
+  transform: translateY(-2px);
+}
+
+.order-search-container .order-info {
+  flex: 1;
+}
+
+.order-search-container .order-code {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1.2em;
+}
+
+.order-search-container .search-order-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.order-search-container .search-order-details span {
+  color: #666;
+  font-size: 14px;
+}
+
+/* Status indicator styles */
+.order-search-container .status-indicator {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.order-search-container .status-indicator.listo-para-despachar {
+  background: #e6f4ea;
+  color: #1e8e3e;
+}
+
+/* Action buttons styles */
+.order-search-container .order-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.order-search-container .verify-button {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.order-search-container .verify-button:hover {
+  background: #0052a3;
+}
+
+/* No results message */
+.order-search-container .no-results {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .order-search-container {
+    padding: 12px 0;
+  }
+
+  .order-search-container .search-header {
+    flex-direction: column;
+  }
+
+  .order-search-container .search-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .order-search-container .result-item {
+    flex-direction: column;
+  }
+
+  .order-search-container .order-actions {
+    margin-top: 16px;
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

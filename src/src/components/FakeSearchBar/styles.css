@@ -1,0 +1,56 @@
+/* ============================================
+   FAKE SEARCH BAR - AIRBNB STYLE
+   ============================================ */
+
+.fake-search-container {
+    padding: 16px;
+    background: #FFFFFF;
+}
+
+.fake-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border: 1px solid #DDDDDD;
+    border-radius: 32px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08),
+        0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.fake-search-bar:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1),
+        0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.fake-search-bar:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.fake-search-icon {
+    color: #222222;
+    flex-shrink: 0;
+}
+
+.fake-search-placeholder {
+    font-size: 16px;
+    font-weight: 500;
+    color: #717171;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .fake-search-container {
+        padding: 12px 16px;
+    }
+
+    .fake-search-bar {
+        padding: 14px 18px;
+    }
+}

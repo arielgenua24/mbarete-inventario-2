@@ -1,0 +1,192 @@
+.QR-productTitle,
+.QR-productDetail {
+  margin: 5px 0;
+}
+
+.QR-modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  /* Slight blur backdrop feel usually done with backdrop-filter, keeping simple for now */
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.3s ease;
+}
+
+.QR-modalContent {
+  background: white;
+  padding: 30px;
+  /* More padding for breathing room */
+  border-radius: 20px;
+  /* Apple-style large radius */
+  width: 90%;
+  max-width: 800px;
+  text-align: center;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.QR-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  padding: 10px 0;
+}
+
+.QR-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 160px;
+  padding: 16px;
+  border: 1px solid #E5E5EA;
+  /* System Gray 5 */
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.QR-item:hover {
+  transform: translateY(-2px);
+}
+
+.QR-title {
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 12px;
+  color: #1C1C1E;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.qr-canvas {
+  width: 100px !important;
+  height: 100px !important;
+}
+
+/* APPLE STYLE BUTTONS */
+.QR-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #F2F2F7;
+}
+
+@media (min-width: 600px) {
+  .QR-buttons {
+    flex-direction: row;
+  }
+}
+
+.QR-actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  /* Standard Apple touch target */
+  padding: 0 24px;
+  border-radius: 980px;
+  /* Pill shape */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  border: none;
+  min-width: 160px;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.QR-actionButton:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* Primary: iOS Blue */
+.QR-actionButton.primary {
+  background-color: #007AFF;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+}
+
+.QR-actionButton.primary:hover {
+  background-color: #0066d6;
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35);
+}
+
+/* Secondary: iOS Indigo/Purple - Distinctive */
+.QR-actionButton.secondary {
+  background-color: #5856D6;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(88, 86, 214, 0.25);
+}
+
+.QR-actionButton.secondary:hover {
+  background-color: #4b49b6;
+  box-shadow: 0 6px 16px rgba(88, 86, 214, 0.35);
+}
+
+/* Danger / Close: Minimalist Light Gray */
+.QR-actionButton.danger {
+  background-color: #F2F2F7;
+  color: #FF3B30;
+  /* System Red for text to indicate closure/exit */
+  box-shadow: none;
+}
+
+.QR-actionButton.danger:hover {
+  background-color: #E5E5EA;
+  color: #d63127;
+}
+
+@media print {
+  .QR-modalOverlay {
+    position: static;
+    background: none;
+    width: 100%;
+    height: auto;
+    backdrop-filter: none;
+  }
+
+  .QR-modalContent {
+    background: white;
+    padding: 0;
+    box-shadow: none;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    overflow: visible;
+  }
+
+  .QR-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .QR-item {
+    border: none;
+    box-shadow: none;
+  }
+
+  .QR-buttons {
+    display: none;
+  }
+}

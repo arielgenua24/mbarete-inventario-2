@@ -1,0 +1,353 @@
+/* ============================================
+   CART PAGE - AIRBNB STYLE
+   Premium Checkout Experience
+   ============================================ */
+
+/* Base Variables - Airbnb Palette (Shared) */
+:root {
+    --airbnb-black: #222222;
+    --airbnb-gray-dark: #717171;
+    --airbnb-gray-medium: #B0B0B0;
+    --airbnb-gray-light: #DDDDDD;
+    --airbnb-gray-bg: #F7F7F7;
+    --airbnb-white: #FFFFFF;
+    --airbnb-pink: #FF385C;
+    --airbnb-pink-dark: #E31C5F;
+    --airbnb-green: #008A05;
+    --airbnb-red: #C13515;
+    --airbnb-font: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --airbnb-radius: 12px;
+    --airbnb-radius-lg: 16px;
+    --airbnb-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    --airbnb-shadow-top: 0 -4px 20px rgba(0, 0, 0, 0.08);
+
+    --font-xl: 26px;
+    --font-lg: 22px;
+    --font-md: 18px;
+    --font-base: 16px;
+    --font-sm: 14px;
+}
+
+/* ============================================
+   PAGE LAYOUT
+   ============================================ */
+.cart-page-container {
+    min-height: 100vh;
+    background-color: var(--airbnb-white);
+    padding-bottom: 140px;
+    /* Space for fixed footer */
+    font-family: var(--airbnb-font);
+    color: var(--airbnb-black);
+}
+
+.cart-header {
+    padding: 24px 24px 12px;
+    border-bottom: 1px solid var(--airbnb-gray-light);
+    margin-bottom: 24px;
+}
+
+.cart-title {
+    font-size: var(--font-xl);
+    font-weight: 800;
+    margin: 0;
+    color: var(--airbnb-black);
+    letter-spacing: -0.02em;
+}
+
+.cart-subtitle {
+    font-size: var(--font-base);
+    color: var(--airbnb-gray-dark);
+    margin-top: 4px;
+    font-weight: 400;
+}
+
+/* ============================================
+   ORDER SUMMARY SECTION
+   ============================================ */
+.cart-section-title {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    margin: 0 24px 16px;
+    padding-top: 24px;
+}
+
+.cart-items-list {
+    list-style: none;
+    padding: 0 24px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ============================================
+   BOTTOM CHECKOUT BAR
+   ============================================ */
+.cart-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--airbnb-white);
+    border-top: 1px solid var(--airbnb-gray-light);
+    padding: 20px 24px 32px;
+    /* Extra padding for safe area */
+    box-shadow: var(--airbnb-shadow-top);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cart-total-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.cart-total-label {
+    font-size: var(--font-md);
+    color: var(--airbnb-black);
+    font-weight: 600;
+}
+
+.cart-total-amount {
+    font-size: 28px;
+    /* Prominent total */
+    font-weight: 800;
+    color: var(--airbnb-black);
+    letter-spacing: -0.03em;
+}
+
+.cart-checkout-btn {
+    width: 100%;
+    height: 56px;
+    /* Taller button */
+    background-color: rgb(9, 223, 56);
+    color: var(--airbnb-white);
+    border: none;
+    border-radius: 8px;
+    /* Slightly more squared like Airbnb primary buttons */
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.cart-checkout-btn:active {
+    transform: scale(0.98);
+}
+
+.cart-checkout-btn:disabled {
+    background: var(--airbnb-gray-light);
+    color: var(--airbnb-gray-dark);
+    cursor: not-allowed;
+}
+
+.cart-back-btn {
+    width: 100%;
+    height: 56px;
+    background-color: var(--airbnb-gray-bg);
+    color: var(--airbnb-black);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* ============================================
+   ERROR ERROR OVERLAY
+   ============================================ */
+.cart-error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+}
+
+.cart-error-content {
+    background: var(--airbnb-white);
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow: var(--airbnb-shadow);
+    max-width: 400px;
+    border: 1px solid var(--airbnb-gray-light);
+}
+
+.cart-error-title {
+    color: var(--airbnb-red);
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 16px;
+}
+
+.cart-error-message {
+    font-size: 16px;
+    color: var(--airbnb-gray-dark);
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+.cart-error-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--airbnb-black);
+    color: var(--airbnb-white);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ============================================
+   STOCK GROUP - Same product, different variants
+   ============================================ */
+.cart-stock-group {
+    border-radius: var(--airbnb-radius-lg);
+    padding: 16px;
+    margin: 0;
+}
+
+.cart-stock-group--ok {
+    border: 2px solid #d4edda;
+    background: #f8fff9;
+}
+
+.cart-stock-group--danger {
+    border: 2px solid var(--airbnb-red);
+    background: #fff5f3;
+}
+
+.cart-stock-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--airbnb-gray-light);
+}
+
+.cart-stock-group-name {
+    font-size: var(--font-md);
+    font-weight: 700;
+    color: var(--airbnb-black);
+    text-transform: capitalize;
+}
+
+.cart-stock-group-badge {
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--airbnb-black);
+    color: var(--airbnb-white);
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.cart-stock-group-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cart-stock-group-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+
+.cart-stock-group-scroll::-webkit-scrollbar-thumb {
+    background: var(--airbnb-gray-medium);
+    border-radius: 4px;
+}
+
+.cart-stock-group-card {
+    min-width: 280px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+}
+
+/* Stock control bar below grouped items */
+.cart-stock-control {
+    border-radius: var(--airbnb-radius);
+    padding: 12px 16px;
+    margin-top: 8px;
+    font-size: var(--font-sm);
+}
+
+.cart-stock-control--ok {
+    background: #e6f9ed;
+    border: 1px solid #b8e6c8;
+}
+
+.cart-stock-control--danger {
+    background: #ffeae6;
+    border: 1px solid #f5c6bc;
+}
+
+.cart-stock-control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.cart-stock-control-row strong {
+    font-size: var(--font-base);
+}
+
+.cart-stock-control--danger .cart-stock-control-row strong {
+    color: var(--airbnb-red);
+}
+
+.cart-stock-control-warning {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--airbnb-red);
+    color: var(--airbnb-white);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .cart-footer {
+        padding: 24px 40px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .cart-total-container {
+        flex-direction: column;
+        align-items: flex-start;
+        width: auto;
+    }
+
+    .cart-checkout-btn {
+        width: 300px;
+    }
+}

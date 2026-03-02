@@ -1,0 +1,194 @@
+/* WhatsApp-style Image Upload Component */
+
+.image-upload-container {
+  width: 100%;
+  margin: 15px 0;
+}
+
+.image-upload-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Upload dropzone - WhatsApp style */
+.image-upload-dropzone {
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #d1d7db;
+  border-radius: 12px;
+  background: #f7f8fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.image-upload-dropzone:hover {
+  border-color: #00a884;
+  background: #f0f9f6;
+}
+
+.image-upload-dropzone:active {
+  transform: scale(0.98);
+}
+
+.image-upload-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+
+.image-upload-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #00a884;
+  margin: 0;
+  margin-bottom: 4px;
+}
+
+.image-upload-subtext {
+  font-size: 13px;
+  color: #667781;
+  margin: 0;
+}
+
+/* Preview container */
+.image-upload-preview {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.image-upload-preview img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 300px;
+  object-fit: cover;
+}
+
+/* Loading overlay */
+.image-upload-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.image-upload-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #00a884;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.image-upload-loading p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Action buttons */
+.image-upload-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.image-upload-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.image-upload-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.image-upload-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.image-upload-btn-change {
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-upload-btn-remove {
+  color: #ff4d4d;
+}
+
+/* Error message */
+.image-upload-error {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: #fff3f3;
+  border: 1px solid #ffc9c9;
+  border-radius: 8px;
+  color: #d32f2f;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Help text */
+.image-upload-help {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #667781;
+  text-align: center;
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .image-upload-dropzone {
+    height: 180px;
+  }
+
+  .image-upload-icon {
+    font-size: 40px;
+  }
+
+  .image-upload-text {
+    font-size: 15px;
+  }
+
+  .image-upload-preview {
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,121 @@
+.team-notes-page {
+  min-height: 100svh;
+  height: 100svh;
+  background:
+    radial-gradient(circle at 8% 8%, #ffe8ee 0%, transparent 30%),
+    radial-gradient(circle at 96% 2%, #fff3dc 0%, transparent 26%),
+    linear-gradient(180deg, #fff9fb 0%, #f8f9fc 52%, #f4f6fb 100%);
+  padding: 18px;
+  padding-bottom: 10px;
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.team-notes-page-header-shell {
+  position: sticky;
+  top: 0;
+  z-index: 9;
+  padding-top: 4px;
+  margin-bottom: 16px;
+}
+
+.team-notes-page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ececf2;
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 26px rgba(24, 30, 56, 0.08);
+}
+
+.back-button {
+  background-color: #ffffff;
+  border: 1px solid #e2e4ea;
+  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #202124;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.back-button:hover {
+  background-color: #f7f8fb;
+  border-color: #ff9baf;
+  transform: translateX(-1px);
+}
+
+.back-button:active {
+  transform: scale(0.95);
+}
+
+.page-title {
+  font-size: 23px;
+  font-weight: 700;
+  color: #17181a;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  color: #6f7480;
+}
+
+.team-notes-page-content {
+  max-width: 920px;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .team-notes-page {
+    padding: 14px;
+    padding-bottom: 8px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .back-button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .team-notes-page {
+    padding: 8px;
+    padding-bottom: 6px;
+  }
+
+  .team-notes-page-header-shell {
+    margin-bottom: 8px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 12px;
+  }
+}

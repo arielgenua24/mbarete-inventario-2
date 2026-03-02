@@ -1,0 +1,39 @@
+# Vercel Ignore File
+# Don't deploy these to Vercel
+
+# Node modules
+node_modules/
+src/node_modules/
+api/node_modules/
+
+# Environment files (use Vercel dashboard for env vars)
+.env
+.env.local
+.env.*.local
+api/.env
+src/.env
+src/.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentation (not needed in production)
+*.md
+!README.md
+
+# Git
+.git/
+.gitignore

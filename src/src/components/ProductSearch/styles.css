@@ -1,0 +1,655 @@
+/* ============================================
+   PRODUCT SEARCH - WHATSAPP BUSINESS + UBER STYLE
+   Premium Design System
+   ============================================ */
+
+/* CSS Variables for consistent theming */
+:root {
+  --wa-bg-primary: #ffffff;
+  --wa-bg-secondary: #f7f8fa;
+  --wa-bg-tertiary: #e9edef;
+  --wa-text-primary: #111b21;
+  --wa-text-secondary: #667781;
+  --wa-text-tertiary: #8696a0;
+  --wa-accent-green: #00a884;
+  --wa-accent-green-dark: #008069;
+  --wa-accent-blue: #0088cc;
+  --wa-border: #e9edef;
+  --wa-shadow-sm: 0 1px 2px rgba(11, 20, 26, 0.08);
+  --wa-shadow-md: 0 2px 8px rgba(11, 20, 26, 0.12);
+  --wa-shadow-lg: 0 4px 16px rgba(11, 20, 26, 0.16);
+  --wa-radius-sm: 8px;
+  --wa-radius-md: 12px;
+  --wa-radius-lg: 16px;
+  --wa-radius-full: 24px;
+  --wa-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --wa-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+/* ============================================
+   SEARCH CONTAINER
+   ============================================ */
+.product-search-container {
+  font-family: var(--wa-font-family);
+  max-width: 100%;
+  margin: 0;
+  background: #F0EEE6;
+  border-radius: var(--wa-radius-lg);
+  position: relative;
+  z-index: 50;
+  transition: all 0.3s ease;
+}
+
+/* Active state - elevated and prominent */
+.product-search-container.active {
+  z-index: 1000;
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* Backdrop overlay when search is active */
+.search-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.search-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================
+   SEARCH HEADER - UBER STYLE FLOATING BAR
+   ============================================ */
+.product-search-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 16px 20px;
+  background: #F0EEE6;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--wa-radius-lg) var(--wa-radius-lg) 0 0;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--wa-bg-secondary);
+  border-radius: var(--wa-radius-full);
+  padding: 12px 16px;
+  transition: var(--wa-transition);
+  border: 2px solid transparent;
+}
+
+.search-wrapper.focused {
+  background: var(--wa-bg-primary);
+  border-color: var(--wa-accent-green);
+  box-shadow: var(--wa-shadow-md);
+}
+
+.search-icon {
+  color: var(--wa-text-tertiary);
+  flex-shrink: 0;
+  transition: var(--wa-transition);
+}
+
+.search-wrapper.focused .search-icon {
+  color: var(--wa-accent-green);
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--wa-text-primary);
+  outline: none;
+  font-family: var(--wa-font-family);
+  letter-spacing: -0.01em;
+}
+
+.search-input::placeholder {
+  color: var(--wa-text-tertiary);
+  font-weight: 400;
+}
+
+.clear-search-btn {
+  background: var(--wa-bg-tertiary);
+  border: none;
+  cursor: pointer;
+  color: var(--wa-text-secondary);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--wa-transition);
+  margin-left: 0;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.clear-search-btn:hover {
+  background: var(--wa-text-tertiary);
+  color: var(--wa-bg-primary);
+}
+
+.clear-search-btn span {
+  line-height: 1;
+}
+
+/* ============================================
+   RESULTS CONTAINER
+   ============================================ */
+.results-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease;
+  opacity: 0;
+  background: var(--wa-bg-primary);
+}
+
+.results-container.visible {
+  max-height: 80vh;
+  overflow-y: auto;
+  opacity: 1;
+  border-bottom: 1px solid var(--wa-border);
+}
+
+/* Custom Scrollbar */
+.results-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.results-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.results-container::-webkit-scrollbar-thumb {
+  background: var(--wa-border);
+  border-radius: 3px;
+}
+
+/* ============================================
+   LOADING & EMPTY STATES
+   ============================================ */
+.searching-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 16px;
+  color: var(--wa-text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.searching-indicator svg {
+  color: var(--wa-accent-green);
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--wa-text-secondary);
+  font-size: 15px;
+  text-align: center;
+}
+
+.no-results svg {
+  color: var(--wa-text-tertiary);
+  width: 48px;
+  height: 48px;
+  opacity: 0.5;
+}
+
+/* ============================================
+   RESULTS LIST - WHATSAPP CATALOG STYLE
+   ============================================ */
+.results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ============================================
+   PRODUCT CARD - PREMIUM WHATSAPP STYLE
+   ============================================ */
+.result-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-bottom: 1px solid var(--wa-border);
+  background: var(--wa-bg-primary);
+  transition: var(--wa-transition);
+  min-height: auto;
+}
+
+.result-item:hover {
+  background: var(--wa-bg-secondary);
+}
+
+.result-item.low-stock {
+  border-left: 3px solid #ff6b6b;
+}
+
+.product-info-actions-container {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  padding: 16px;
+  align-items: flex-start;
+}
+
+/* ============================================
+   PRODUCT IMAGE - WHATSAPP CATALOG STYLE
+   ============================================ */
+.search-product-image-container {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: var(--wa-radius-md);
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--wa-bg-secondary) 0%, var(--wa-bg-tertiary) 100%);
+  position: relative;
+}
+
+.search-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.result-item:hover .search-product-image {
+  transform: scale(1.05);
+}
+
+/* Placeholder for missing images */
+.search-product-image-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+}
+
+/* ============================================
+   PRODUCT INFO CONTENT
+   ============================================ */
+.product-info-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 14px;
+}
+
+.product-info {
+  margin-bottom: 4px;
+}
+
+.product-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--wa-text-primary);
+  margin: 0 0 2px 0;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================
+   PRODUCT DETAILS - CLEAN METADATA
+   ============================================ */
+.search-product-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 13px;
+  color: var(--wa-text-secondary);
+  width: 100%;
+  height: auto;
+  margin-top: 4px;
+}
+
+.search-product-details span {
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+}
+
+.search-product-details span::before {
+  content: '';
+  width: 3px;
+  height: 3px;
+  background: var(--wa-text-tertiary);
+  border-radius: 50%;
+  margin-right: 8px;
+  display: none;
+}
+
+.search-product-details span:first-child::before {
+  display: none;
+}
+
+/* ============================================
+   PRICE - PROMINENT DISPLAY
+   ============================================ */
+.product-price {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--wa-text-primary) !important;
+  margin-top: 6px !important;
+  letter-spacing: -0.02em;
+}
+
+/* ============================================
+   STOCK INDICATOR
+   ============================================ */
+.stock-indicator {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: var(--wa-radius-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-top: 4px !important;
+}
+
+.stock-indicator.good {
+  background: rgba(0, 168, 132, 0.1);
+  color: var(--wa-accent-green-dark) !important;
+}
+
+.stock-indicator.warning {
+  background: rgba(255, 107, 107, 0.1);
+  color: #d63031 !important;
+}
+
+/* ============================================
+   PRODUCT ACTIONS - QUANTITY + CART
+   ============================================ */
+.product-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 16px 16px;
+  margin: 0;
+  max-width: 100%;
+}
+
+/* ============================================
+   QUANTITY SELECTOR - UBER STYLE
+   ============================================ */
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--wa-bg-secondary);
+  border-radius: var(--wa-radius-full);
+  padding: 4px;
+  width: 100%;
+  max-width: 160px;
+}
+
+.quantity-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--wa-bg-primary);
+  color: var(--wa-text-primary);
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--wa-transition);
+  box-shadow: var(--wa-shadow-sm);
+}
+
+.quantity-btn:hover {
+  background: var(--wa-accent-green);
+  color: white;
+  transform: scale(1.05);
+}
+
+.quantity-btn:active {
+  transform: scale(0.95);
+}
+
+.quantity-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quantity-btn:disabled:hover {
+  background: var(--wa-bg-primary);
+  color: var(--wa-text-primary);
+  transform: none;
+}
+
+.quantity-display {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--wa-text-primary);
+  min-width: 48px;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+/* ============================================
+   ADD TO CART BUTTON - WHATSAPP GREEN
+   ============================================ */
+.search-add-to-cart-button {
+  background: var(--wa-accent-green);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: var(--wa-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: var(--wa-transition);
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(0, 168, 132, 0.3);
+  text-transform: none;
+  scale: 1;
+}
+
+.search-add-to-cart-button:hover {
+  background: var(--wa-accent-green-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 168, 132, 0.4);
+}
+
+.search-add-to-cart-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 168, 132, 0.3);
+}
+
+/* ============================================
+   INVENTORY ACTIONS (EDIT/QR)
+   ============================================ */
+.inventory-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inventory-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--wa-radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--wa-transition);
+  border: 1px solid var(--wa-border);
+  background: var(--wa-bg-primary);
+  color: var(--wa-text-primary);
+}
+
+.inventory-action-btn:hover {
+  background: var(--wa-bg-secondary);
+  border-color: var(--wa-text-tertiary);
+}
+
+.inventory-action-btn.primary {
+  background: var(--wa-accent-blue);
+  color: white;
+  border-color: transparent;
+}
+
+.inventory-action-btn.primary:hover {
+  background: #0077b5;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 480px) {
+  .product-info-actions-container {
+    padding: 12px;
+  }
+
+  .search-product-image-container {
+    width: 72px;
+    height: 72px;
+  }
+
+  .product-name {
+    font-size: 15px;
+  }
+
+  .product-price {
+    font-size: 16px !important;
+  }
+
+  .search-product-details {
+    font-size: 12px;
+    gap: 4px 8px;
+  }
+
+  .product-actions {
+    padding: 0 12px 12px 12px;
+  }
+
+  .search-add-to-cart-button {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-item {
+  animation: slideIn 0.2s ease-out;
+}
+
+.result-item:nth-child(1) {
+  animation-delay: 0.02s;
+}
+
+.result-item:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.result-item:nth-child(3) {
+  animation-delay: 0.06s;
+}
+
+.result-item:nth-child(4) {
+  animation-delay: 0.08s;
+}
+
+.result-item:nth-child(5) {
+  animation-delay: 0.1s;
+}
+
+/* Spin animation for loader */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ============================================
+   CART QUICK ACTION ROW
+   ============================================ */
+.cart-quick-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.cart-quick-action .quantity-selector {
+  flex-shrink: 0;
+}
+
+.cart-quick-action .search-add-to-cart-button {
+  flex: 1;
+}

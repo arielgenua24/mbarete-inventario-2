@@ -1,0 +1,127 @@
+/* Página completa */
+.home-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FDF8F9 0%, #F9F0F2 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Contenedor principal */
+.home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    min-height: calc(100vh - 80px);
+}
+
+/* Texto de bienvenida */
+.home-welcome-text {
+    font-size: 24px;
+    text-align: center;
+    margin: 20px 0 30px 0;
+    color: #555;
+    font-weight: 600;
+}
+
+/* Enlaces */
+.home-link {
+    width: 100%;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+/* Botones */
+.home-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 260px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    font-weight: 500;
+    color: #222;
+    transition: transform 0.2s ease, background 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.home-btn:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.8);
+    color: #222;
+}
+
+/* Íconos */
+.home-icon {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    color: #666;
+}
+
+/* Subtexto debajo de cada botón */
+.home-subtext {
+    font-size: 12px;
+    color: #777;
+    margin-top: 4px;
+}
+
+/* "Dinero y notificaciones" - Fondo negro, borde dorado y tipografía blanca */
+.inbox {
+    background: black;
+    border: 2px solid gold;
+    color: white;
+    margin-bottom: 30px;
+}
+
+/* "Nuevo Pedido" y "Pedidos" - Fondo azul claro y borde azul oscuro */
+.order {
+    background: #F1F7FF;
+    border: 2px solid #0990FF;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Sección de órdenes - Hace que los botones de pedido estén más juntos */
+.home-orders-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 280px;
+}
+
+/* "Catálogo" - Naranja crema con margen superior */
+.catalog {
+    background: #FFE3D1;
+    color: #F7780F;
+    border: none;
+    margin-top: 30px;
+}
+
+/* "Notas del Equipo" - Amarillo Apple Notes style */
+.notes {
+    background: linear-gradient(135deg, #FFCC00 0%, #FFD93D 100%);
+    color: #1D1D1F;
+    border: 2px solid #FFB800;
+    margin-top: 16px;
+    font-weight: 600;
+}
+
+.notes:hover {
+    background: linear-gradient(135deg, #FFD700 0%, #FFE066 100%);
+    border-color: #FFA500;
+}
+
+/* Animación al aparecer */
+@keyframes fadeIn {
+    fr

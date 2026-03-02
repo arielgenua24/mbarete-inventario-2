@@ -1,0 +1,244 @@
+.products-verification {
+  padding: 20px;
+}
+
+.products-verification * {
+  box-sizing: border-box;
+}
+
+.pv-product-item {
+  border: 1px solid #e5e5ea;
+  padding: 24px;
+  margin-bottom: 24px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.pv-product-item:active {
+  transform: scale(0.99);
+}
+
+.pv-verification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f2f7;
+}
+
+.pv-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.pv-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.pv-btn-manual {
+  background-color: #f2f2f7;
+  color: #007aff;
+}
+
+.pv-btn-manual:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f2f2f7;
+  color: #8e8e93;
+}
+
+.pv-btn-reset {
+  background-color: #ff3b30;
+  color: white;
+}
+
+.pv-verification-complete {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 18px;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.pv-product-details {
+  border-left: 4px solid #28a745;
+  padding-left: 15px;
+  display: grid;
+  grid-template-columns: minmax(120px, 170px) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  width: 100%;
+}
+
+.pv-image-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.pv-product-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #e0e0e0;
+  max-width: 100%;
+}
+
+.pv-dispatch-image {
+  border-color: #28a745;
+}
+
+.pv-product-info {
+  min-width: 0;
+}
+
+.pv-stock-info {
+  font-size: 1.1rem;
+  margin: 0 0 10px;
+}
+
+.pv-stock-info span {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.pv-product-specs {
+  color: #495057;
+  min-width: 0;
+}
+
+.pv-product-specs p {
+  margin: 6px 0;
+  font-size: 16px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.pv-product-specs strong {
+  color: #212529;
+}
+
+.pv-total-price-container {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.pv-total-price {
+  color: #000;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.pv-total-price span {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pv-final-total-wrapper {
+  position: sticky;
+  top: 25px;
+  z-index: 100;
+  width: 100%;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+}
+
+.pv-final-total {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 34px;
+  background: rgba(0, 122, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.pv-total-label {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.pv-total-amount {
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .products-verification {
+    padding: 12px;
+  }
+
+  .pv-product-item {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .pv-product-details {
+    grid-template-columns: 1fr;
+    border-left: none;
+    border-top: 4px solid #28a745;
+    padding-left: 0;
+    padding-top: 12px;
+  }
+
+  .pv-image-wrap {
+    justify-content: flex-start;
+  }
+
+  .pv-product-image {
+    width: 100%;
+    max-width: 180px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .pv-total-price {
+    font-size: 1rem;
+  }
+
+  .pv-final-total-wrapper {
+    padding: 8px 4px 12px;
+  }
+
+  .pv-final-total {
+    padding: 14px 16px;
+    border-radius: 22px;
+  }
+
+  .pv-total-label {
+    font-size: 16px;
+  }
+
+  .pv-total-amount {
+    font-size: 20px;
+  }
+}

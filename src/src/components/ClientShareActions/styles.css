@@ -1,0 +1,533 @@
+/* ========================================
+   SHARE ACTIONS - Apple-like Design
+   ======================================== */
+
+/* Container Principal (Full variant) */
+.share-actions-container {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.share-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6e6e73;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px 0;
+}
+
+/* Botón QR Principal */
+.share-action-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.share-action-btn:hover {
+  background: #f5f5f7;
+  border-color: #d1d1d6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.share-action-btn:active {
+  transform: translateY(0);
+  background: #e8e8ed;
+}
+
+.share-action-btn .btn-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #0A84FF 0%, #0066CC 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.share-action-btn .btn-icon svg {
+  color: white;
+}
+
+.share-action-btn .btn-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.share-action-btn .btn-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.share-action-btn .btn-description {
+  font-size: 13px;
+  color: #86868b;
+}
+
+.share-action-btn .btn-arrow {
+  font-size: 20px;
+  color: #c7c7cc;
+  font-weight: 300;
+}
+
+/* Sección WhatsApp */
+.whatsapp-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e5ea;
+}
+
+.whatsapp-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.wa-icon {
+  width: 36px;
+  height: 36px;
+  background: #e7fdf0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wa-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.wa-subtitle {
+  font-size: 12px;
+  color: #86868b;
+}
+
+.whatsapp-input-container {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e5ea;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.whatsapp-input-container:focus-within {
+  border-color: #0A84FF;
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+}
+
+.phone-prefix {
+  padding: 12px;
+  background: #f5f5f7;
+  color: #86868b;
+  font-size: 14px;
+  font-weight: 500;
+  border-right: 1px solid #e5e5ea;
+}
+
+.phone-input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: transparent;
+  min-width: 0;
+}
+
+.phone-input::placeholder {
+  color: #c7c7cc;
+}
+
+.send-wa-btn {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  color: white;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.send-wa-btn:hover {
+  filter: brightness(1.05);
+}
+
+.send-wa-btn:active {
+  filter: brightness(0.95);
+}
+
+.send-wa-btn-block {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.whatsapp-hint {
+  font-size: 12px;
+  color: #86868b;
+  margin: 8px 0 0 0;
+  text-align: center;
+}
+
+/* ========================================
+   COMPACT VARIANT (para lista de órdenes)
+   ======================================== */
+
+.share-actions-compact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.share-btn-compact {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid #e5e5ea;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.share-btn-compact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: #d1d1d6;
+}
+
+.share-btn-compact:active {
+  transform: translateY(0);
+}
+
+.share-btn-qr {
+  background: #ffffff;
+}
+
+.share-btn-wa {
+  background: #ffffff;
+}
+
+.share-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.share-btn-qr .share-btn-icon {
+  background: #e8f1ff;
+  color: #0a84ff;
+}
+
+.share-btn-wa .share-btn-icon {
+  background: #e7fdf0;
+  color: #128c7e;
+}
+
+.share-btn-text {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+/* Input WhatsApp Flotante (compact) */
+.whatsapp-input-floating {
+  position: relative;
+  width: 100%;
+  margin-top: 8px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e5ea;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.10),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 14px;
+  animation: slideDown 0.2s ease;
+}
+
+@media (max-width: 520px) {
+  .share-actions-compact {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.whatsapp-input-floating input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #e5e5ea;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.whatsapp-input-floating input:focus {
+  border-color: #25D366;
+}
+
+.whatsapp-floating-title {
+  display: block;
+  font-size: 12px;
+  color: #6e6e73;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.whatsapp-floating-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.send-wa-floating-btn,
+.whatsapp-input-floating .close-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.send-wa-floating-btn {
+  background: #25D366;
+  color: white;
+}
+
+.whatsapp-input-floating .close-btn {
+  background: #f5f5f7;
+  color: #86868b;
+}
+
+.whatsapp-input-floating .close-btn:hover {
+  background: #e8e8ed;
+}
+
+/* ========================================
+   QR MODAL
+   ======================================== */
+
+.qr-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.qr-modal-content {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 340px;
+  width: 100%;
+  position: relative;
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.qr-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f5f5f7;
+  border: none;
+  font-size: 20px;
+  color: #86868b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.qr-modal-close:hover {
+  background: #e8e8ed;
+  color: #1d1d1f;
+}
+
+.qr-modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.qr-modal-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0 0 4px 0;
+}
+
+.qr-modal-header p {
+  font-size: 14px;
+  color: #86868b;
+  margin: 0;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: #f5f5f7;
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.qr-order-code {
+  text-align: center;
+  font-size: 16px;
+  color: #1d1d1f;
+  margin-bottom: 20px;
+}
+
+.qr-order-code strong {
+  color: #0A84FF;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.qr-modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.qr-action-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.qr-action-btn.copy {
+  background: linear-gradient(135deg, #0A84FF 0%, #0066CC 100%);
+  color: white;
+}
+
+.qr-action-btn.copy:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.qr-action-btn.copy:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 480px) {
+  .share-actions-container {
+    margin: 16px;
+    padding: 16px;
+  }
+
+  .share-action-btn {
+    padding: 12px;
+  }
+
+  .share-action-btn .btn-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .share-action-btn .btn-label {
+    font-size: 15px;
+  }
+
+  .qr-modal-content {
+    padding: 20px;
+  }
+
+  .whatsapp-floating-actions {
+    flex-direction: column;
+  }
+}
