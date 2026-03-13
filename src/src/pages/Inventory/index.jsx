@@ -246,7 +246,7 @@ const Inventory = () => {
             disabled={!aiImageFile}
             className="aiAnalyzeBtn"
           >
-            ✦ Analizar y guardar con IA
+            Analizar y guardar con IA
           </button>
           <button
             onClick={() => setIsAiHistoryOpen(true)}

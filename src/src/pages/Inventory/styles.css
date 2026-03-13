@@ -71,25 +71,38 @@
   /* ── AI Upload Section ── */
   .aiUploadSection {
     position: relative;
-    margin: 20px 0;
-    padding: 32px 24px;
-    border-radius: 20px;
+    margin: 24px 0;
+    padding: 40px 32px;
+    border-radius: 24px;
     overflow: hidden;
-    background-image: url('../../assets/ai-bg.png');
-    background-size: cover;
-    background-position: center;
-    box-shadow: 0 8px 32px rgba(9, 144, 255, 0.18);
+    background: linear-gradient(135deg, #FAF7F2 0%, #F5EDE3 100%);
+    box-shadow:
+      0 4px 20px rgba(0, 0, 0, 0.04),
+      0 1px 3px rgba(0, 0, 0, 0.02),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    animation: fadeInUp 0.6s ease-out, subtleFloat 6s ease-in-out infinite;
+    animation-delay: 0s, 0.6s;
   }
 
-  /* dark + blur overlay */
-  .aiUploadSection::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(10, 15, 40, 0.52);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 20px;
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes subtleFloat {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
   }
 
   .aiUploadSection > * {
@@ -99,21 +112,28 @@
 
   .aiUploadSection h3 {
     margin-top: 0;
-    margin-bottom: 6px;
-    color: #fff;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
+    margin-bottom: 8px;
+    color: #717171;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    opacity: 0.7;
+    animation: fadeIn 0.5s ease-out 0.2s both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .aiUploadTagline {
-    color: #fff;
-    font-size: 1.35rem;
-    font-weight: 700;
-    margin: 0 0 24px;
+    color: #222222;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 28px;
     line-height: 1.3;
+    letter-spacing: -0.02em;
+    animation: fadeIn 0.5s ease-out 0.3s both;
   }
 
   /* Hidden native input — the label is the drop zone */
@@ -126,68 +146,103 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 28px 20px;
-    border: 1.5px dashed rgba(255, 255, 255, 0.4);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.08);
+    gap: 12px;
+    padding: 32px 24px;
+    border: 2px dashed #DDDDDD;
+    border-radius: 16px;
+    background: #FFFFFF;
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.5s ease-out 0.4s both;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
   }
 
   .aiDropZone:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.7);
+    background: #FFFFFF;
+    border-color: #222222;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   }
 
   .aiDropZone svg {
-    width: 36px;
-    height: 36px;
-    color: rgba(255,255,255,0.75);
+    width: 40px;
+    height: 40px;
+    color: #222222;
     flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+
+  .aiDropZone:hover svg {
+    transform: scale(1.1);
   }
 
   .aiDropZoneText {
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 600;
+    color: #222222;
+    font-size: 1rem;
+    font-weight: 500;
   }
 
   .aiDropZoneSubtext {
-    color: rgba(255,255,255,0.5);
-    font-size: 0.78rem;
+    color: #717171;
+    font-size: 0.85rem;
+    font-weight: 400;
   }
 
   .aiPreviewImg {
     max-width: 100%;
     max-height: 240px;
-    border-radius: 12px;
-    border: 1.5px solid rgba(255,255,255,0.25);
-    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-    margin-bottom: 20px;
+    border-radius: 16px;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    margin-bottom: 24px;
     display: block;
+    animation: fadeIn 0.4s ease-out;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .aiPreviewImg:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
   }
 
   .aiAnalyzeBtn {
     width: auto;
-    padding: 14px 24px;
+    padding: 16px 28px;
     border: none;
     border-radius: 12px;
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 0.95rem;
+    font-weight: 600;
     cursor: pointer;
-    color: white;
-    background: linear-gradient(135deg, #0990FF 0%, #7B5EA7 100%);
-    box-shadow: 0 4px 20px rgba(9, 144, 255, 0.45);
-    transition: transform 0.15s, box-shadow 0.15s;
-    letter-spacing: 0.02em;
+    color: #FFFFFF;
+    background: linear-gradient(135deg, #FF385C 0%, #E31C5F 100%);
+    box-shadow: 0 4px 16px rgba(255, 56, 92, 0.35);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.01em;
+    animation: fadeIn 0.5s ease-out 0.5s both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .aiAnalyzeBtn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
   }
 
   .aiAnalyzeBtn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 26px rgba(9, 144, 255, 0.55);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 56, 92, 0.45);
+  }
+
+  .aiAnalyzeBtn:hover:not(:disabled)::before {
+    left: 100%;
   }
 
   .aiAnalyzeBtn:active:not(:disabled) {
@@ -195,16 +250,17 @@
   }
 
   .aiAnalyzeBtn:disabled {
-    background: rgba(255,255,255,0.15);
+    background: #DDDDDD;
     box-shadow: none;
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.7;
   }
 
   .aiActionsRow {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
+    animation: fadeIn 0.5s ease-out 0.5s both;
   }
 
   .aiAnalyzeBtn {
@@ -213,34 +269,60 @@
 
   .aiHistoryBtn {
     flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    width: 52px;
+    height: 52px;
+    border: 1.5px solid #DDDDDD;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.8);
+    background: #FFFFFF;
+    color: #222222;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s, border-color 0.15s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   }
 
   .aiHistoryBtn:hover {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.6);
+    background: #F7F7F7;
+    border-color: #222222;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .aiHistoryBtn:active {
+    transform: translateY(0);
   }
 
   .aiHistoryBtn svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
   }
 
   .aiUploadHint {
-    margin-top: 14px;
-    color: rgba(255,255,255,0.45);
-    font-size: 0.8rem;
+    margin-top: 18px;
+    color: #717171;
+    font-size: 0.85rem;
     text-align: center;
+    font-weight: 400;
+    animation: fadeIn 0.5s ease-out 0.6s both;
+  }
+
+  /* Sparkle animation for the AI button */
+  @keyframes sparkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+  }
+
+  .aiAnalyzeBtn {
+    position: relative;
+  }
+
+  .aiAnalyzeBtn::after {
+    content: '✦';
+    margin-left: 8px;
+    animation: sparkle 2s ease-in-out infinite;
+    display: inline-block;
   }
 
   @keyframes spin {
