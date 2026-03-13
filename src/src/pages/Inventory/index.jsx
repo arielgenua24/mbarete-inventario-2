@@ -26,7 +26,9 @@ const Inventory = () => {
     price: '',
     details: '',
     stock: '',
-    imageUrl: null
+    imageUrl: null,
+    sizes: '',
+    category: ''
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [lastVisibleDoc, setLastVisibleDoc] = useState(null);
@@ -97,10 +99,12 @@ const Inventory = () => {
         newProduct.price,
         newProduct.details,
         newProduct.stock,
-        newProduct.imageUrl || null
+        newProduct.imageUrl || null,
+        newProduct.sizes || '',
+        newProduct.category || ''
       );
       setIsModalOpen(false);
-      setNewProduct({ name: '', price: '', details: '', stock: '', imageUrl: null });
+      setNewProduct({ name: '', price: '', details: '', stock: '', imageUrl: null, sizes: '', category: '' });
       await loadInitialProducts();
     } catch (error) {
       console.error("Error al agregar producto:", error);

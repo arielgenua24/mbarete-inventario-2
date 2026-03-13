@@ -24,11 +24,14 @@ function Product() {
   const [stock, setStock] = useState(product.stock);
   const [details, setDetails] = useState(product.details);
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
+  // Talles como string editable "38,40,42" para facilitar edición
+  const [sizesInput, setSizesInput] = useState('');
+  const [category, setCategory] = useState('');
 
   useEffect(() => {
     const loadProducts = async () => {
       setIsLoading(true);
-     
+
       const fetchedProduct = await getProduct(id);
       if (fetchedProduct === undefined) {
         alert('El producto no existe');
@@ -43,6 +46,12 @@ function Product() {
       setStock(fetchedProduct.stock);
       setDetails(fetchedProduct.details || '');
       setImageUrl(fetchedProduct.imageUrl || null);
+      // Convertir array de talles a string para edición
+      const existingSizes = Array.isArray(fetchedProduct.sizes)
+        ? fetchedProduct.sizes.join(',')
+        : (fetchedProduct.sizes || '');
+      setSizesInput(existingSizes);
+      setCategory(fetchedProduct.category || '');
       setIsLoading(false);
     };
     loadProducts();
@@ -59,6 +68,15 @@ function Product() {
     const currentDate = new Date();
     const formattedDate = format(currentDate, 'yyyy-MM-dd HH:mm:ss', { locale: es });
 
+    // Parsear talles: "38,40,42" → [38, 40, 42]
+    const parsedSizes = sizesInput
+      ? sizesInput.split(',').map(s => {
+          const trimmed = s.trim();
+          const n = parseInt(trimmed, 10);
+          return isNaN(n) ? trimmed : n;
+        }).filter(s => s !== '' && s !== null)
+      : [];
+
     const updatedProduct = {
       id,
       name,
@@ -67,6 +85,8 @@ function Product() {
       details,
       updatedAt: formattedDate,
       imageUrl: imageUrl || null,
+      sizes: parsedSizes,
+      category: category || '',
     };
     try {
       await updateProduct(updatedProduct.id, updatedProduct);
@@ -171,6 +191,43 @@ function Product() {
               )}
             </label>
           </div>
+
+            {/* Talles */}
+            <label className="product-editor-field product-editor-field-full">
+              <span>Talles disponibles</span>
+              <input
+                type="text"
+                className="product-editor-input"
+                placeholder="Ej: 38,40,42,44 o S,M,L,XL"
+                value={sizesInput}
+                onChange={(e) => { setSizesInput(e.target.value); setChanges(true); }}
+              />
+              <small className="product-editor-hint">Separados por coma. Se mostrarán en la página web.</small>
+            </label>
+
+            {/* Categoría */}
+            <label className="product-editor-field product-editor-field-full">
+              <span>Categoría</span>
+              <select
+                className="product-editor-input"
+                value={category}
+                onChange={(e) => { setCategory(e.target.value); setChanges(true); }}
+              >
+                <option value="">Sin categoría</option>
+                <option value="jean">Jean</option>
+                <option value="bermuda">Bermuda</option>
+                <option value="baggy">Baggy</option>
+                <option value="joggers">Joggers</option>
+                <option value="parachutte">Parachutte</option>
+                <option value="frisa">Frisa</option>
+                <option value="Camperas">Camperas</option>
+                <option value="Chalecos">Chalecos</option>
+                <option value="Clásico">Clásico</option>
+                <option value="Nuevos">Nuevos</option>
+                <option value="ReIngreso">ReIngreso</option>
+                <option value="PocoStock">Poco Stock</option>
+              </select>
+            </label>
 
           <div className="product-editor-actions">
             {changes ? (

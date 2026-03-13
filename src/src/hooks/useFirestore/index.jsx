@@ -55,7 +55,7 @@ const useFirestore = () => {
   }
 
   //OKAY, producto agregado
-  const addProduct = async (name, price, details, stock, imageUrl = null) => {
+  const addProduct = async (name, price, details, stock, imageUrl = null, sizes = [], category = '') => {
     try {
         //obtenemos el codigo de el producto
     const productCode = await incrementProductCode();
@@ -65,12 +65,23 @@ const useFirestore = () => {
     const processedName = typeof name === 'string' ? name.toLowerCase() : name;
     const processedDetails = typeof details === 'string' ? details : details;
 
+    // Parsear talles: acepta string "38,40,42" o array ya procesado
+    const parsedSizes = Array.isArray(sizes)
+      ? sizes
+      : String(sizes).split(',').map(s => {
+          const trimmed = s.trim();
+          const n = parseInt(trimmed, 10);
+          return isNaN(n) ? trimmed : n;
+        }).filter(s => s !== '' && s !== null);
+
       const productData = {
         productCode, // productCode usualmente tiene un formato específico, no se convierte
         name: processedName,
         price, // price es un número, no se convierte
         details: processedDetails,
         stock, // stock es un número, no se convierte
+        sizes: parsedSizes,   // Array de talles: [38, 40, 42] o ['S', 'M', 'L']
+        category: category || '',
         updatedAt: serverTimestamp(), // Use Firestore server timestamp for delta sync
         createdAt: formattedDate, // Keep formatted date for display purposes
       };

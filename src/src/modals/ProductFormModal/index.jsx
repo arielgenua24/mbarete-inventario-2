@@ -192,6 +192,45 @@ function ProductFormModal({handleSubmit, newProduct, setNewProduct, setIsModalOp
           );
           })}
 
+          {/* Talles */}
+          <div className="formGroup">
+            <label className="label">Talles disponibles</label>
+            <input
+              type="text"
+              value={newProduct.sizes || ''}
+              onChange={(e) => setNewProduct({ ...newProduct, sizes: e.target.value })}
+              className="input"
+              placeholder="Ej: 38,40,42,44 o S,M,L,XL"
+            />
+            <div style={{ marginTop: '4px', fontSize: '11px', color: '#6c757d', fontStyle: 'italic' }}>
+              Separados por coma. Se mostrarán en la página web.
+            </div>
+          </div>
+
+          {/* Categoría */}
+          <div className="formGroup">
+            <label className="label">Categoría</label>
+            <select
+              value={newProduct.category || ''}
+              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+              className="input"
+            >
+              <option value="">Sin categoría</option>
+              <option value="jean">Jean</option>
+              <option value="bermuda">Bermuda</option>
+              <option value="baggy">Baggy</option>
+              <option value="joggers">Joggers</option>
+              <option value="parachutte">Parachutte</option>
+              <option value="frisa">Frisa</option>
+              <option value="Camperas">Camperas</option>
+              <option value="Chalecos">Chalecos</option>
+              <option value="Clásico">Clásico</option>
+              <option value="Nuevos">Nuevos</option>
+              <option value="ReIngreso">ReIngreso</option>
+              <option value="PocoStock">Poco Stock</option>
+            </select>
+          </div>
+
           <div className="buttonGroup">
              <button
               type="button"
@@ -206,7 +245,7 @@ function ProductFormModal({handleSubmit, newProduct, setNewProduct, setIsModalOp
             <button type="submit" className="button">
               Guardar
             </button>
-           
+
           </div>
         </form>
       </div>
