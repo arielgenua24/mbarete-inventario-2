@@ -8,39 +8,34 @@ import searchProducts from '../../utils/searchFn'
 import './styles.css'
 
 // eslint-disable-next-line react/prop-types
-function ProductFormModal({handleSubmit, newProduct, setNewProduct, setIsModalOpen}){
+function ProductFormModal({ handleSubmit, newProduct, setNewProduct, setIsModalOpen }) {
   const [suggestions, setSuggestions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [imageUrl, setImageUrl] = useState(null);
 
-  const {getAllProducts} = useFirestoreContext();
-  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+  const { getAllProducts } = useFirestoreContext();
+  const { isAdmin } = useIsAdmin();
 
   useEffect(() => {
     const loadProducts = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       const fetchedProductsArray = await getAllProducts();
       setProducts(fetchedProductsArray);
-      console.log('All products fetched for suggestions:', fetchedProductsArray);
-      setIsLoading(false)
+      setIsLoading(false);
     };
     loadProducts();
   }, [getAllProducts]);
 
   const handleNameChange = async (e) => {
     const value = e.target.value;
-    console.log(value)
     setNewProduct({ ...newProduct, name: value });
-    
-    // Realizamos la búsqueda cuando el texto tiene al menos 3 caracteres
+
     if (value.length >= 3) {
-      console.log('working search')
       try {
         const results = await searchProducts(products, value);
         setSuggestions(results);
-      } catch (error) {
-        console.error("Error al buscar productos:", error);
+      } catch {
         setSuggestions([]);
       }
     } else {
@@ -49,207 +44,206 @@ function ProductFormModal({handleSubmit, newProduct, setNewProduct, setIsModalOp
   };
 
   const handleSuggestionClick = (suggestion) => {
-    // Al hacer click en la sugerencia, se completan los datos deseados
     setNewProduct({
       ...newProduct,
       name: suggestion.name,
       price: suggestion.price,
       details: suggestion.details || '',
     });
-    // If suggestion has an image, set it
     if (suggestion.imageUrl) {
       setImageUrl(suggestion.imageUrl);
     }
     setSuggestions([]);
-    // Mostrar la notificación
     showSuggestionNotification();
   };
 
-  // Handle image upload
   const handleImageUploaded = (url) => {
     setImageUrl(url);
-    setNewProduct({
-      ...newProduct,
-      imageUrl: url
-    });
+    setNewProduct({ ...newProduct, imageUrl: url });
   };
 
-    return(
-        <div className="modal">
+  // Close on backdrop click
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) setIsModalOpen(false);
+  };
 
-        {isLoading && LoadingComponent}
-        <form onSubmit={handleSubmit} className="modalContent">
-          <h3 className="subtitle">Nuevo Producto</h3>
-          
-          <div className="formGroup">
-            <label className="label">Nombre del producto</label>
-            <input
-              type="text"
-              //this in is broken after chosing a recommendation, it doesn't work after chosing a product
-              value={newProduct.name}
-              onChange={handleNameChange}
-              className="input"
-            />
-            {suggestions.length > 0 && (
-              <div className="suggestion-input--container">
-                <div style={{width: '100%', height: '80px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                <span style={{padding: '10px', backgroundColor: '#f3f3f3', width: '100%'}}>SUGERENCIAS DE AUTOCOMPLETADO</span>
+  return (
+    <div className="pf-overlay" onClick={handleOverlayClick}>
+      <div className="pf-dialog" role="dialog" aria-modal="true" aria-label="Nuevo producto">
 
+        {/* Drag handle — mobile only */}
+        <div className="pf-drag-wrap">
+          <div className="pf-drag-handle" />
+        </div>
 
-                </div>
+        {/* Header */}
+        <div className="pf-header">
+          <h2 className="pf-title">Nuevo Producto</h2>
+          <button
+            type="button"
+            className="pf-close-btn"
+            onClick={() => setIsModalOpen(false)}
+            aria-label="Cerrar"
+          >
+            ✕
+          </button>
+        </div>
 
+        {isLoading && <LoadingComponent isLoading={true} />}
 
-                <ul className="suggestion-input--list">
-                      {suggestions.map((suggestion, index) => (
-                        <li 
-                          key={index} 
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          className="suggestion-input--item"
-                        >
-                          <span className="suggestion-input--name">{suggestion.name}</span>
-                          <span className="suggestion-input--details">{suggestion.details}</span>
-                          <span className="suggestion-input--price">${suggestion.price}</span>
-                        </li>
-                      ))}
-                    </ul>
-              </div>
+        <form onSubmit={handleSubmit} className="pf-form">
+          <div className="pf-body">
 
-            )}
-          </div>
-
-          {/* Image Upload Component - WhatsApp style */}
-          <ImageUpload
-            onImageUploaded={handleImageUploaded}
-            existingImageUrl={imageUrl}
-          />
-
-          {['price', 'details', 'stock'].map(field => {
-            // ✅ SECURITY: Only admin can modify stock
-            const isStockField = field === 'stock';
-            const isDisabled = isStockField && !isAdmin;
-
-            return (
-            <div key={field} className="formGroup">
-              <label className="label">
-                {field === 'price' ? 'Precio' :
-                field === 'details' ? 'Detalles del producto' :
-                field === 'stock' ? 'Cantidad en inventario' :
-                field}
-                {isDisabled && (
-                  <span style={{
-                    marginLeft: '8px',
-                    fontSize: '12px',
-                    color: '#dc3545',
-                    fontWeight: 'bold'
-                  }}>
-                    🔒 Solo Admin
-                  </span>
-                )}
-              </label>
-              {field === 'details' ? (
-                <textarea
-                  value={newProduct[field] || ''}
-                  onChange={(e) => setNewProduct({
-                    ...newProduct,
-                    [field]: e.target.value
-                  })}
-                  className="input"
-                  placeholder="Descripción del producto, materiales, etc."
-                  rows={3}
-                />
-              ) : (
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={field === 'price' || field === 'stock' ? 'number' : 'text'}
-                    value={newProduct[field] || ''}
-                    onChange={(e) => setNewProduct({
-                      ...newProduct,
-                      [field]: e.target.value
-                    })}
-                    className="input"
-                    required={!isDisabled}
-                    disabled={isDisabled}
-                    style={{
-                      backgroundColor: isDisabled ? '#f5f5f5' : 'white',
-                      cursor: isDisabled ? 'not-allowed' : 'text',
-                      opacity: isDisabled ? 0.6 : 1
-                    }}
-                    title={isDisabled ? 'Solo el administrador puede modificar el stock' : ''}
-                  />
-                  {isDisabled && (
-                    <div style={{
-                      marginTop: '4px',
-                      fontSize: '11px',
-                      color: '#6c757d',
-                      fontStyle: 'italic'
-                    }}>
-                      El stock solo puede ser modificado por el administrador para prevenir irregularidades
-                    </div>
-                  )}
+            {/* ── Nombre del producto ── */}
+            <div className="pf-field">
+              <label className="pf-label">Nombre Del Producto</label>
+              <input
+                type="text"
+                value={newProduct.name}
+                onChange={handleNameChange}
+                className="pf-input"
+                placeholder="Ej: Jean cargo azul"
+                autoComplete="off"
+              />
+              {suggestions.length > 0 && (
+                <div className="pf-suggestions">
+                  <div className="pf-suggestions-header">Autocompletado</div>
+                  <ul className="pf-suggestions-list">
+                    {suggestions.map((suggestion, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="pf-suggestion-item"
+                      >
+                        <span className="pf-suggestion-name">{suggestion.name}</span>
+                        <div className="pf-suggestion-meta">
+                          <span className="pf-suggestion-price">${suggestion.price}</span>
+                          {suggestion.details && (
+                            <span className="pf-suggestion-detail">{suggestion.details}</span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
-          );
-          })}
 
-          {/* Talles */}
-          <div className="formGroup">
-            <label className="label">Talles disponibles</label>
-            <input
-              type="text"
-              value={newProduct.sizes || ''}
-              onChange={(e) => setNewProduct({ ...newProduct, sizes: e.target.value })}
-              className="input"
-              placeholder="Ej: 38,40,42,44 o S,M,L,XL"
+            {/* ── Image upload ── */}
+            <ImageUpload
+              onImageUploaded={handleImageUploaded}
+              existingImageUrl={imageUrl}
             />
-            <div style={{ marginTop: '4px', fontSize: '11px', color: '#6c757d', fontStyle: 'italic' }}>
-              Separados por coma. Se mostrarán en la página web.
+
+            {/* ── Precio + Stock (same row) ── */}
+            <div className="pf-row">
+              <div className="pf-field">
+                <label className="pf-label">Precio</label>
+                <input
+                  type="number"
+                  value={newProduct.price || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                  className="pf-input"
+                  placeholder="0"
+                  required
+                  min="0"
+                />
+              </div>
+
+              <div className="pf-field">
+                <label className="pf-label">
+                  Cantidad En Inventario
+                  {!isAdmin && (
+                    <span className="pf-label-badge">🔒 Admin</span>
+                  )}
+                </label>
+                <input
+                  type="number"
+                  value={newProduct.stock || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                  className="pf-input"
+                  placeholder="0"
+                  disabled={!isAdmin}
+                  required={!!isAdmin}
+                  min="0"
+                  title={!isAdmin ? 'Solo el administrador puede modificar el stock' : ''}
+                />
+                {!isAdmin && (
+                  <p className="pf-admin-hint">Solo admin puede editar</p>
+                )}
+              </div>
             </div>
+
+            {/* ── Detalles ── */}
+            <div className="pf-field">
+              <label className="pf-label">Detalles Del Producto</label>
+              <textarea
+                value={newProduct.details || ''}
+                onChange={(e) => setNewProduct({ ...newProduct, details: e.target.value })}
+                className="pf-input pf-textarea"
+                placeholder="Descripción del producto, materiales, etc."
+                rows={3}
+              />
+            </div>
+
+            {/* ── Talles + Categoría (same row) ── */}
+            <div className="pf-row">
+              <div className="pf-field">
+                <label className="pf-label">Talles Disponibles</label>
+                <input
+                  type="text"
+                  value={newProduct.sizes || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, sizes: e.target.value })}
+                  className="pf-input"
+                  placeholder="S,M,L,XL"
+                />
+                <p className="pf-hint">Separados por coma. Se mostrarán en la página web.</p>
+              </div>
+
+              <div className="pf-field">
+                <label className="pf-label">Categoría</label>
+                <select
+                  value={newProduct.category || ''}
+                  onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                  className="pf-input pf-input--select"
+                >
+                  <option value="">Sin categoría</option>
+                  <option value="jean">Jean</option>
+                  <option value="bermuda">Bermuda</option>
+                  <option value="baggy">Baggy</option>
+                  <option value="joggers">Joggers</option>
+                  <option value="parachutte">Parachutte</option>
+                  <option value="frisa">Frisa</option>
+                  <option value="Camperas">Camperas</option>
+                  <option value="Chalecos">Chalecos</option>
+                  <option value="Clásico">Clásico</option>
+                  <option value="Nuevos">Nuevos</option>
+                  <option value="ReIngreso">ReIngreso</option>
+                  <option value="PocoStock">Poco Stock</option>
+                </select>
+              </div>
+            </div>
+
           </div>
 
-          {/* Categoría */}
-          <div className="formGroup">
-            <label className="label">Categoría</label>
-            <select
-              value={newProduct.category || ''}
-              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-              className="input"
-            >
-              <option value="">Sin categoría</option>
-              <option value="jean">Jean</option>
-              <option value="bermuda">Bermuda</option>
-              <option value="baggy">Baggy</option>
-              <option value="joggers">Joggers</option>
-              <option value="parachutte">Parachutte</option>
-              <option value="frisa">Frisa</option>
-              <option value="Camperas">Camperas</option>
-              <option value="Chalecos">Chalecos</option>
-              <option value="Clásico">Clásico</option>
-              <option value="Nuevos">Nuevos</option>
-              <option value="ReIngreso">ReIngreso</option>
-              <option value="PocoStock">Poco Stock</option>
-            </select>
-          </div>
-
-          <div className="buttonGroup">
-             <button
+          {/* ── Sticky action footer ── */}
+          <div className="pf-footer">
+            <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              style={{ backgroundColor: 'red', color: '#fff' }}
-              className="button"
+              className="pf-btn pf-btn-cancel"
             >
               Salir
             </button>
-
-
-            <button type="submit" className="button">
+            <button type="submit" className="pf-btn pf-btn-save">
               Guardar
             </button>
-
           </div>
         </form>
+
       </div>
-    )
+    </div>
+  );
 }
 
 export default ProductFormModal;

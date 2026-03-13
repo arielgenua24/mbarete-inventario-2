@@ -66,53 +66,7 @@
     cursor: pointer;
   }
   
-  .modal {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .modalContent {
-    background-color: white;
-    padding: 24px;
-    border-radius: 8px;
-    width: 384px;
-  }
-  
-  .formGroup {
-    margin-bottom: 16px;
-  }
-  
-  .label {
-    display: block;
-    margin-bottom: 8px;
-    text-transform: capitalize;
-  }
-  
-  .input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .buttonGroup {
-    display: flex;
-    gap: 16px;
-  }
-  
-  .button {
-    flex: 1;
-    padding: 8px;
-    background-color: #0E6FFF;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+  /* ProductFormModal now uses pf-* classes in its own styles.css */
 
   @keyframes spin {
     0% { transform: rotate(0deg); }
