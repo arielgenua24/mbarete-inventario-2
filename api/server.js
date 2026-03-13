@@ -1,12 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const authHandler = require('./auth');
+const openrouterHandler = require('./openrouter');
 
 const app = express();
 const PORT = 3001;
 
 // Enable CORS for local development
 app.use(cors());
+app.use(express.json({ limit: '20mb' }));
 
 // Health check endpoint
 app.get('/', (req, res) => {
@@ -14,7 +16,8 @@ app.get('/', (req, res) => {
     status: 'ok',
     message: 'ImageKit Auth API is running',
     endpoints: {
-      auth: '/api/auth'
+      auth: '/api/auth',
+      openrouter: '/api/openrouter'
     }
   });
 });
@@ -22,6 +25,11 @@ app.get('/', (req, res) => {
 // ImageKit auth endpoint
 app.get('/api/auth', (req, res) => {
   authHandler(req, res);
+});
+
+// OpenRouter proxy endpoint
+app.post('/api/openrouter', (req, res) => {
+  openrouterHandler(req, res);
 });
 
 app.listen(PORT, () => {

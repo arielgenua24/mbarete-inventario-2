@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import LoadingComponent from '../../components/Loading';
 import './styles.css';
 
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
+// La API key vive en el servidor (api/openrouter.js), nunca en el bundle del frontend.
 const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL || "minimax/minimax-m2.5";
-const OPENROUTER_ENDPOINT = import.meta.env.VITE_OPENROUTER_ENDPOINT || "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_ENDPOINT = '/api/openrouter';
 
 const AIChatModal = ({
   isOpen,
@@ -70,7 +70,11 @@ REGLAS IMPORTANTES:
 
 3. STOCK: Siempre stock: 0. Nunca se incluye en capturas, no lo inventes.
 
-4. PRECIOS: Si aparecen 2 precios para el mismo producto, uno está tachado (precio anterior). Usar siempre el precio más bajo.
+4. PRECIOS:
+   - Todos los precios están en pesos argentinos y son SIEMPRE múltiplos de mil (8000, 14000, 20000, etc.).
+   - Si el precio leído parece bajo (ej: 14, 20, 8.5), multiplicarlo por 1000 → 14000, 20000, 8500.
+   - Regla simple: si el número es menor a 1000, multiplicar por 1000.
+   - Si aparecen 2 precios para el mismo producto, uno está tachado (precio anterior). Usar siempre el precio más bajo.
 
 5. TALLES — REGLA MÁS IMPORTANTE:
    CADA TALLE ES UN PRODUCTO SEPARADO EN EL ARRAY. NUNCA juntes talles en un solo objeto.
@@ -147,10 +151,7 @@ Ejemplo correcto para "Super Baggy Nevado 38/40/42/44 ARS 20000":
       const response = await fetch(OPENROUTER_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'Mbareté Inventory'
         },
         body: JSON.stringify(payload)
       });
@@ -288,10 +289,7 @@ Ejemplo correcto para "Super Baggy Nevado 38/40/42/44 ARS 20000":
       const response = await fetch(OPENROUTER_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'Mbareté Inventory'
         },
         body: JSON.stringify(payload)
       });

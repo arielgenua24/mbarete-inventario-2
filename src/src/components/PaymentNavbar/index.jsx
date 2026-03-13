@@ -4,7 +4,7 @@ function PaymentNavbar() {
   const currentDate = new Date();
   const currentMonth = currentDate.toLocaleDateString('es-ES', { month: 'long' });
   const currentYear = currentDate.getFullYear();
-  const paymentAmount = '193500';
+  const paymentAmount = '260000';
 
   return (
     <div className="payment-navbar">

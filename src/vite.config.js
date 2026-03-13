@@ -4,16 +4,16 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
 
-  // Uncomment this when testing with ngrok on smartphone
-  // Replace with your ngrok API URL
-  // server: {
-  //   proxy: {
-  //     '/api': {
-  //       target: 'https://your-ngrok-api-url.ngrok.io',
-  //       changeOrigin: true,
-  //     }
-  //   }
-  // },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      }
+    }
+  },
+
+  // When testing with ngrok on smartphone, replace target above with your ngrok API URL
 
   build: {
     rollupOptions: {

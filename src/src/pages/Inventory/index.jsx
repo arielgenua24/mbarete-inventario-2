@@ -16,7 +16,6 @@ import qrIcon from '../../assets/icons/icons8-qr-100.png';
 
 import './styles.css';
 
-const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 
 const Inventory = () => {
   const [products, setProducts] = useState([]);
@@ -154,10 +153,6 @@ const Inventory = () => {
   const handleAiAnalyze = () => {
     if (!aiImageFile) {
       alert('Por favor, sube una imagen primero.');
-      return;
-    }
-    if (!OPENROUTER_API_KEY) {
-      alert('Falta la API key de OpenRouter. Configura VITE_OPENROUTER_API_KEY.');
       return;
     }
     setIsAiModalOpen(true);

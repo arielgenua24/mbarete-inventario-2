@@ -107,8 +107,7 @@ function MiCompra() {
       {/* Header con branding */}
       <header className="mi-compra-header">
         <div className="brand-logo">
-          <span className="brand-icon">👑</span>
-          <h1>Reina Chura</h1>
+          <h1>Mbarete</h1>
         </div>
         <p className="header-subtitle">Detalle de tu compra</p>
       </header>
@@ -212,8 +211,8 @@ function MiCompra() {
 
         {/* Footer mensaje */}
         <div className="thank-you-section">
-          <p>¡Gracias por tu compra! 💖</p>
-          <p className="small-text">Reina Chura Confecciones</p>
+          <p>¡Gracias por tu compra!</p>
+          <p className="small-text">Mbarete; jeans mayorista de alta costura</p>
         </div>
       </main>
 

@@ -62,7 +62,7 @@ function Home() {
             <PaymentNavbar />
             <div className="home-container">
                 <h2 className="home-welcome-text">
-                    Bienvenida a tu sistema de inventario Reina👑
+                    Bienvenida a tu sistema de inventario Majo
                 </h2>
 
 
