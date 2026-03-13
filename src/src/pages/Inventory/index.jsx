@@ -4,6 +4,8 @@ import useFirestoreContext from '../../hooks/useFirestoreContext';
 import ProductFormModal from '../../modals/ProductFormModal';
 import QRModal from '../../modals/Qrmodal';
 import AIChatModal from '../../modals/AIChatModal';
+import AIResultsModal from '../../modals/AIResultsModal';
+import AIHistoryModal, { saveSessionToHistory } from '../../modals/AIHistoryModal';
 import ProductSearch from '../../components/ProductSearch';
 import EditProductBtn from '../../components/EditProduct';
 import QRButton from '../../components/QrGenerateBtn';
@@ -39,6 +41,9 @@ const Inventory = () => {
   const [aiImageFile, setAiImageFile] = useState(null);
   const [aiImagePreviewUrl, setAiImagePreviewUrl] = useState('');
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiSavedProducts, setAiSavedProducts] = useState([]);
+  const [isAiResultsOpen, setIsAiResultsOpen] = useState(false);
+  const [isAiHistoryOpen, setIsAiHistoryOpen] = useState(false);
 
   const navigate = useNavigate();
   const { getProducts, addProduct, deleteProduct, user } = useFirestoreContext();
@@ -158,9 +163,13 @@ const Inventory = () => {
     setIsAiModalOpen(true);
   };
 
-  const handleProductsDetected = (count) => {
-    // Refresh products list after successful save
+  const handleProductsDetected = (savedProducts) => {
     loadInitialProducts();
+    if (savedProducts?.length > 0) {
+      saveSessionToHistory(savedProducts);
+      setAiSavedProducts(savedProducts);
+      setIsAiResultsOpen(true);
+    }
   };
 
   const handleCloseAiModal = () => {
@@ -199,42 +208,60 @@ const Inventory = () => {
       <ProductSearch products={products} setQRcode={setQRcode} />
 
       {/* Sección de Carga con IA */}
-      <div className="bulkUploadSection" style={{ margin: '20px 0', padding: '20px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-        <h3 className="subtitle" style={{ marginTop: '0', marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>CARGAR CON IA</h3>
+      <div className="aiUploadSection">
+        <h3>Nuevo</h3>
+        <p className="aiUploadTagline">Cargá tu catálogo con IA</p>
+
         <input
           type="file"
           id="ai-image-upload-input"
           accept="image/*"
           onChange={handleAiImageChange}
-          style={{ display: 'block', margin: '15px 0', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', width: 'calc(100% - 22px)' }}
+          className="aiFileInput"
         />
-        {aiImagePreviewUrl && (
-          <div style={{ marginBottom: '15px' }}>
+
+        {aiImagePreviewUrl ? (
+          <label htmlFor="ai-image-upload-input" style={{ cursor: 'pointer' }}>
             <img
               src={aiImagePreviewUrl}
               alt="Vista previa de la captura"
-              style={{ maxWidth: '100%', maxHeight: '260px', borderRadius: '6px', border: '1px solid #ddd' }}
+              className="aiPreviewImg"
             />
-          </div>
+          </label>
+        ) : (
+          <label htmlFor="ai-image-upload-input" className="aiDropZone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span className="aiDropZoneText">Subí una captura de WhatsApp</span>
+            <span className="aiDropZoneSubtext">JPG, PNG · Toca para seleccionar</span>
+          </label>
         )}
-        <button
-          onClick={handleAiAnalyze}
-          disabled={!aiImageFile}
-          className="addButton-bulk"
-          style={{
-            marginRight: '10px',
-            backgroundColor: !aiImageFile ? '#bdc3c7' : '#27ae60',
-            color: 'white',
-            padding: '10px 20px',
-            fontSize: '16px',
-            cursor: !aiImageFile ? 'not-allowed' : 'pointer',
-            opacity: !aiImageFile ? 0.7 : 1
-          }}
-        >
-          Analizar con IA
-        </button>
-        <p style={{ marginTop: '15px', color: '#666' }}>
-          Sube una captura de catálogo y chatea con la IA para extraer los productos automáticamente.
+
+        <div className="aiActionsRow">
+          <button
+            onClick={handleAiAnalyze}
+            disabled={!aiImageFile}
+            className="aiAnalyzeBtn"
+          >
+            ✦ Analizar y guardar con IA
+          </button>
+          <button
+            onClick={() => setIsAiHistoryOpen(true)}
+            className="aiHistoryBtn"
+            title="Ver historial de cargas"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </button>
+        </div>
+
+        <p className="aiUploadHint">
+          La IA detecta los productos y los guarda automáticamente en tu catálogo.
         </p>
       </div>
 
@@ -336,6 +363,17 @@ const Inventory = () => {
         aiImagePreviewUrl={aiImagePreviewUrl}
         onProductsDetected={handleProductsDetected}
         addProduct={addProduct}
+      />
+
+      <AIResultsModal
+        isOpen={isAiResultsOpen}
+        onClose={() => setIsAiResultsOpen(false)}
+        savedProducts={aiSavedProducts}
+      />
+
+      <AIHistoryModal
+        isOpen={isAiHistoryOpen}
+        onClose={() => setIsAiHistoryOpen(false)}
       />
     </div>
   );

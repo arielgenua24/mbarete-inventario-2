@@ -54,30 +54,58 @@ const AIChatModal = ({
   });
 
   const getSystemPrompt = () => {
-    return `Eres un asistente experto en extracción de productos de catálogos y capturas de pantalla.
+    return `Eres un asistente experto en extracción de productos de catálogos y capturas de pantalla de WhatsApp.
 
 Tu objetivo es analizar imágenes de catálogos de productos y extraer la información relevante.
 
 REGLAS IMPORTANTES:
-1. Devuelve SOLO JSON válido cuando detectes productos
+
+1. Devuelve SOLO JSON válido cuando detectes productos.
 2. El JSON debe tener esta estructura exacta:
    {
      "products": [
-       { "name": "string", "price": number, "stock": number, "details": "string" }
+       { "name": "string", "price": number, "stock": 0, "details": "string", "sizes": [number_o_string], "category": "string" }
      ]
    }
 
-3. REGLAS DE TALLES (details):
-   - Si es un rango como "38 al 46", expandir en productos separados: 38, 40, 42, 44, 46
-   - Si es declarativo como "/40/42/44/46", expandir esos talles exactos
-   - Si es por letras como "M L XL", expandir cada letra
-   - Si es ambiguo como "últimos dos talles", NO inventes. Devuelve "questions" con preguntas de aclaración
+3. STOCK: Siempre stock: 0. Nunca se incluye en capturas, no lo inventes.
 
-4. Si la imagen no es clara o falta información, haz preguntas específicas al usuario
-5. Sé conversacional y amigable, como un colega ayudando con el inventario
-6. Cuando el usuario confirme los productos, confirma que los guardarás en la base de datos
+4. PRECIOS: Si aparecen 2 precios para el mismo producto, uno está tachado (precio anterior). Usar siempre el precio más bajo.
 
-Si necesitas aclaraciones, responde normalmente sin JSON. Solo usa JSON cuando tengas productos confirmados.`;
+5. TALLES — REGLA MÁS IMPORTANTE:
+   CADA TALLE ES UN PRODUCTO SEPARADO EN EL ARRAY. NUNCA juntes talles en un solo objeto.
+   - "Super Baggy Nevado 38/40/42/44" → 4 objetos separados, cada uno con sizes: [38], sizes: [40], sizes: [42], sizes: [44]
+   - Rango "38 al 46" → de 2 en 2: 38, 40, 42, 44, 46 → 5 objetos separados
+   - Lista con barra final "40/42/44/" → ignorar barra final → 3 objetos: sizes:[40], sizes:[42], sizes:[44]
+   - Letras "M L XL" → 3 objetos: sizes:["M"], sizes:["L"], sizes:["XL"]
+   - Si es ambiguo, NO inventes. Pregunta al usuario.
+
+6. CATEGORÍAS — usar EXACTAMENTE uno de estos valores (respeta mayúsculas y tildes):
+   - "jean"       → pantalón jean clásico, skinny, slim, recto, chino, mom, cargo
+   - "baggy"      → pantalón baggy, wide leg, oversized
+   - "bermuda"    → bermuda, short, pantaloneta
+   - "joggers"    → jogger, jogging
+   - "parachutte" → pantalón paracaídas, parachutte
+   - "frisa"      → pantalón de frisa, polar, térmica
+   - "Camperas"   → campera, bomber, anorak, rompeviento (C MAYÚSCULA obligatoria)
+   - "Chalecos"   → chaleco, vest (C MAYÚSCULA obligatoria)
+   - "Nuevos"     → producto nuevo, lanzamiento (N MAYÚSCULA obligatoria)
+   - "PocoStock"  → poco stock, últimas unidades (exactamente "PocoStock")
+   - "ReIngreso"  → reingreso, vuelve al catálogo (exactamente "ReIngreso")
+   - "Clásico"    → clásico, básico atemporal (exactamente "Clásico" con tilde)
+   IMPORTANTE: Si no encaja en ninguna categoría, usar "jean" como valor por defecto.
+   NUNCA usar: "jeans", "camperas" (minúscula), "pantalones", "remeras", "buzos", "shorts", "otros".
+
+7. Si la imagen no es clara o falta información crítica, haz preguntas específicas. No uses JSON hasta tener todo claro.
+8. Los productos se guardan automáticamente al recibirlos. Informá al usuario.
+
+Ejemplo correcto para "Super Baggy Nevado 38/40/42/44 ARS 20000":
+{ "products": [
+  { "name": "super baggy nevado", "price": 20000, "stock": 0, "details": "", "sizes": [38], "category": "baggy" },
+  { "name": "super baggy nevado", "price": 20000, "stock": 0, "details": "", "sizes": [40], "category": "baggy" },
+  { "name": "super baggy nevado", "price": 20000, "stock": 0, "details": "", "sizes": [42], "category": "baggy" },
+  { "name": "super baggy nevado", "price": 20000, "stock": 0, "details": "", "sizes": [44], "category": "baggy" }
+] }`;
   };
 
   const startInitialAnalysis = async () => {
@@ -186,18 +214,22 @@ Si necesitas aclaraciones, responde normalmente sin JSON. Solo usa JSON cuando t
           : msg
       ));
 
-      // Try to parse JSON from the response
+      // Try to parse JSON from the response and auto-save
+      let parsedProducts = null;
       try {
         const jsonMatch = accumulatedContent.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           if (parsed.products && Array.isArray(parsed.products)) {
-            setDetectedProducts(parsed.products);
-            setShowProductsPreview(true);
+            parsedProducts = parsed.products;
           }
         }
       } catch {
         // No valid JSON found, continue conversation normally
+      }
+
+      if (parsedProducts) {
+        await saveProductsToDatabase(parsedProducts);
       }
 
     } catch (error) {
@@ -355,23 +387,32 @@ Si necesitas aclaraciones, responde normalmente sin JSON. Solo usa JSON cuando t
     }
   };
 
-  const saveProductsToDatabase = async () => {
-    if (detectedProducts.length === 0) return;
+  const saveProductsToDatabase = async (productsArg = null) => {
+    const products = productsArg || detectedProducts;
+    if (products.length === 0) return;
 
     setIsLoading(true);
-    let savedCount = 0;
+    const savedProducts = [];
     let errors = [];
 
-    for (const product of detectedProducts) {
+    for (const product of products) {
       try {
-        await addProduct(
+        const productId = await addProduct(
           product.name || 'Producto sin nombre',
           product.price || 0,
           product.details || '',
           product.stock || 0,
-          null // No image URL from AI extraction
+          null, // No image URL from AI extraction
+          product.sizes || [],
+          product.category || ''
         );
-        savedCount++;
+        savedProducts.push({
+          id: productId,
+          name: product.name || 'Producto sin nombre',
+          price: product.price || 0,
+          sizes: product.sizes || [],
+          category: product.category || '',
+        });
       } catch (error) {
         console.error('Error guardando producto:', error);
         errors.push(product.name || 'Producto desconocido');
@@ -380,11 +421,10 @@ Si necesitas aclaraciones, responde normalmente sin JSON. Solo usa JSON cuando t
 
     setIsLoading(false);
 
-    // Add confirmation message
     const confirmMessage = {
       id: Date.now(),
       role: 'assistant',
-      content: `✅ Guardado completado: ${savedCount} producto(s) agregado(s) a la base de datos.${errors.length > 0 ? `\n❌ Errores en: ${errors.join(', ')}` : ''}`,
+      content: `✅ ${savedProducts.length} producto(s) guardado(s) automáticamente.${errors.length > 0 ? `\n❌ Errores en: ${errors.join(', ')}` : ''}`,
       timestamp: new Date()
     };
 
@@ -393,7 +433,7 @@ Si necesitas aclaraciones, responde normalmente sin JSON. Solo usa JSON cuando t
     setDetectedProducts([]);
 
     if (onProductsDetected) {
-      onProductsDetected(savedCount);
+      onProductsDetected(savedProducts);
     }
   };
 

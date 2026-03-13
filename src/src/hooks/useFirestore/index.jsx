@@ -152,16 +152,29 @@ const useFirestore = () => {
 
   const updateProduct = async (productId, values) => {
     const { productRef } = await getProduct(productId);
-    console.log(productRef);
 
-    // Use writeBatch to update both product and metadata atomically
     const batch = writeBatch(db);
 
-    // Update the product with server timestamp
+    // Update the target product
     batch.update(productRef, {
       ...values,
       updatedAt: serverTimestamp(),
     });
+
+    // Propagate imageUrl to siblings with the same name that have no image
+    if (values.imageUrl && values.name) {
+      const siblingsSnap = await getDocs(
+        query(collection(db, 'products'), where('name', '==', values.name))
+      );
+      siblingsSnap.forEach((sibDoc) => {
+        if (sibDoc.id !== productId) {
+          batch.update(sibDoc.ref, {
+            imageUrl: values.imageUrl,
+            updatedAt: serverTimestamp(),
+          });
+        }
+      });
+    }
 
     // Update metadata/catalog to track global changes
     const metadataRef = doc(db, 'metadata', 'catalog');
