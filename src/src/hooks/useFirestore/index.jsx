@@ -21,7 +21,8 @@ import {
   startAfter,
   where,
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  runTransaction
 } from "firebase/firestore";
 
 
@@ -187,6 +188,29 @@ const useFirestore = () => {
       }
     };
 
+    // Paginated orders, sorted by createdAt descending
+    const getOrdersPaginated = async (limitParam = 10, startAfterDoc = null) => {
+      try {
+        const ordersRef = collection(db, "orders");
+        let q;
+
+        if (startAfterDoc) {
+          q = query(ordersRef, orderBy("createdAt", "desc"), startAfter(startAfterDoc), limit(limitParam));
+        } else {
+          q = query(ordersRef, orderBy("createdAt", "desc"), limit(limitParam));
+        }
+
+        const ordersSnapshot = await getDocs(q);
+        const ordersData = ordersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const lastVisibleDoc = ordersSnapshot.docs[ordersSnapshot.docs.length - 1];
+
+        return { orders: ordersData, lastVisibleDoc };
+      } catch (error) {
+        console.error("Error al obtener orders paginados:", error);
+        throw error;
+      }
+    };
+
     const filterOrdersByDate = async() => {
       const orders = await getOrders();
 
@@ -233,14 +257,204 @@ const useFirestore = () => {
       return filteredOrders;
     }
 
+    /**
+     * Delete an order and restore stock to products.
+     *
+     * Handles both data formats:
+     * - New format: products embedded as array in order document (order.products)
+     * - Old format: products only in subcollection (orders/{orderId}/products)
+     *
+     * CRITICAL: Aggregates quantities by productId before restoring stock.
+     * Multiple variants of the same product (e.g., "buzo azul talle L" + "buzo azul talle S")
+     * map to a single productId in the products collection, so their quantities must be summed.
+     *
+     * Uses a Firestore transaction to ensure atomicity of stock restoration.
+     * Subcollection cleanup happens after the transaction.
+     *
+     * @param {string} orderId - The Firestore document ID of the order to delete
+     * @returns {Promise<Object>} - { success: true, restoredProducts: [...] } or throws
+     */
     const deleteOrder = async (orderId) => {
       try {
+        console.log(`🗑️ Deleting order ${orderId} with stock restoration...`);
+
         const orderDocRef = doc(db, "orders", orderId);
-        await deleteDoc(orderDocRef);
-        console.log("Order deleted successfully");
-        return true; // Indica que la eliminación fue exitosa
+        const orderSnap = await getDoc(orderDocRef);
+
+        if (!orderSnap.exists()) {
+          console.warn(`⚠️ Order ${orderId} does not exist, nothing to delete`);
+          return { success: true, restoredProducts: [] };
+        }
+
+        const orderData = orderSnap.data();
+
+        // ============================================
+        // STEP 1: Get products from order (handle both formats)
+        // ============================================
+        let orderProducts = [];
+
+        if (orderData.products && Array.isArray(orderData.products) && orderData.products.length > 0) {
+          // NEW FORMAT: Products embedded as array in order document
+          console.log(`📦 Order has embedded products array (${orderData.products.length} items)`);
+          orderProducts = orderData.products.map(p => ({
+            productId: p.productId,
+            quantity: Number(p.quantity) || 0,
+            name: p.productSnapshot?.name || 'Unknown'
+          }));
+        } else {
+          // OLD FORMAT: Products only in subcollection
+          console.log(`📁 Order uses old format, reading products from subcollection...`);
+          const subcollectionSnap = await getDocs(
+            collection(db, "orders", orderId, "products")
+          );
+
+          if (!subcollectionSnap.empty) {
+            orderProducts = subcollectionSnap.docs.map(productDoc => {
+              const data = productDoc.data();
+              return {
+                productId: data.productId || null,
+                quantity: Number(data.stock) || 0, // In subcollection, "stock" = quantity ordered
+                name: data.productSnapshot?.name || data.productData?.name || 'Unknown'
+              };
+            });
+          }
+        }
+
+        if (orderProducts.length === 0) {
+          console.warn(`⚠️ Order ${orderId} has no products to restore stock for`);
+          // Still delete the order and subcollection
+          await deleteDoc(orderDocRef);
+          console.log(`✅ Order ${orderId} deleted (no stock to restore)`);
+          return { success: true, restoredProducts: [] };
+        }
+
+        // ============================================
+        // STEP 2: Aggregate quantities by productId
+        // ============================================
+        // CRITICAL: Multiple variants of the same product (e.g., "buzo azul talle L"
+        // and "buzo azul talle S") share the same productId. We must SUM their
+        // quantities before restoring stock, because there's only ONE stock field
+        // per product in Firestore.
+        const stockRestoreMap = new Map();
+
+        for (const product of orderProducts) {
+          const productId = product.productId;
+
+          if (!productId) {
+            console.warn(`⚠️ Skipping product without productId:`, product);
+            continue;
+          }
+
+          if (product.quantity <= 0) {
+            console.warn(`⚠️ Skipping product with invalid quantity:`, product);
+            continue;
+          }
+
+          if (stockRestoreMap.has(productId)) {
+            const existing = stockRestoreMap.get(productId);
+            existing.totalQuantity += product.quantity;
+            console.log(`📊 Aggregating variant for "${product.name}": total restore = ${existing.totalQuantity}`);
+          } else {
+            stockRestoreMap.set(productId, {
+              productId,
+              productRef: doc(db, "products", productId),
+              totalQuantity: product.quantity,
+              name: product.name
+            });
+          }
+        }
+
+        const productsToRestore = Array.from(stockRestoreMap.values());
+        console.log(`📦 Products to restore stock (${productsToRestore.length} unique products):`);
+        productsToRestore.forEach(p => {
+          console.log(`   - ${p.name} (${p.productId}): +${p.totalQuantity}`);
+        });
+
+        // ============================================
+        // STEP 3: Restore stock atomically via transaction
+        // ============================================
+        const restoredProducts = await runTransaction(db, async (transaction) => {
+          // PHASE 1: ALL READS FIRST (Firestore transaction requirement)
+          const productSnapshots = [];
+          for (const productToRestore of productsToRestore) {
+            const productSnap = await transaction.get(productToRestore.productRef);
+            productSnapshots.push({
+              snap: productSnap,
+              restoreData: productToRestore
+            });
+          }
+
+          // PHASE 2: ALL WRITES
+          const restored = [];
+
+          for (const { snap, restoreData } of productSnapshots) {
+            if (!snap.exists()) {
+              // Product was deleted from inventory — skip silently
+              console.warn(`⚠️ Product ${restoreData.productId} ("${restoreData.name}") no longer exists in Firestore. Skipping stock restore.`);
+              continue;
+            }
+
+            const currentStock = Number(snap.data().stock) || 0;
+            const newStock = currentStock + restoreData.totalQuantity;
+
+            transaction.update(restoreData.productRef, {
+              stock: newStock,
+              updatedAt: serverTimestamp()
+            });
+
+            console.log(`✅ Stock restore: ${restoreData.name} (${restoreData.productId}): ${currentStock} → ${newStock} (+${restoreData.totalQuantity})`);
+            restored.push({
+              productId: restoreData.productId,
+              name: restoreData.name,
+              previousStock: currentStock,
+              restoredQuantity: restoreData.totalQuantity,
+              newStock
+            });
+          }
+
+          // Delete the order document inside the transaction
+          transaction.delete(orderDocRef);
+
+          return restored;
+        });
+
+        // ============================================
+        // STEP 4: Delete subcollection documents
+        // ============================================
+        // Firestore does NOT cascade-delete subcollections when parent is deleted.
+        // We must delete them manually.
+        try {
+          const subcollectionSnap = await getDocs(
+            collection(db, "orders", orderId, "products")
+          );
+
+          if (!subcollectionSnap.empty) {
+            const batch = writeBatch(db);
+            subcollectionSnap.docs.forEach(subDoc => {
+              batch.delete(subDoc.ref);
+            });
+            await batch.commit();
+            console.log(`🗑️ Deleted ${subcollectionSnap.size} subcollection documents`);
+          }
+        } catch (subError) {
+          // Non-fatal: subcollection cleanup failed but order + stock are already correct
+          console.warn(`⚠️ Failed to clean up subcollection for order ${orderId}:`, subError);
+        }
+
+        // ============================================
+        // STEP 5: Update metadata catalog
+        // ============================================
+        try {
+          const metadataRef = doc(db, 'metadata', 'catalog');
+          await setDoc(metadataRef, { lastUpdated: serverTimestamp() }, { merge: true });
+        } catch (metaError) {
+          console.warn(`⚠️ Failed to update metadata:`, metaError);
+        }
+
+        console.log(`✅ Order ${orderId} deleted successfully. Stock restored for ${restoredProducts.length} products.`);
+        return { success: true, restoredProducts };
       } catch (error) {
-        console.error("Error deleting order:", error);
+        console.error("❌ Error deleting order with stock restoration:", error);
         throw error;
       }
     };
@@ -602,6 +816,7 @@ const useFirestore = () => {
 
   return {
     getOrders,
+    getOrdersPaginated,
     createOrderWithProducts,
     addProduct,
     getProducts, // La función original con paginación
@@ -612,7 +827,7 @@ const useFirestore = () => {
     incrementOrdersCode,
     updateProduct,
     getOrderById,
-    filterOrdersByDate,  
+    filterOrdersByDate,
     updateOrder,
     deleteOrder,
     getProductsByOrder,

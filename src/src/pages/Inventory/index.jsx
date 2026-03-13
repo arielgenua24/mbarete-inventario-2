@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useFirestoreContext from '../../hooks/useFirestoreContext';
 import ProductFormModal from '../../modals/ProductFormModal';
 import QRModal from '../../modals/Qrmodal';
+import AIChatModal from '../../modals/AIChatModal';
 import ProductSearch from '../../components/ProductSearch';
 import EditProductBtn from '../../components/EditProduct';
 import QRButton from '../../components/QrGenerateBtn';
@@ -12,6 +13,8 @@ import { auth } from '../../firebaseSetUp';
 import qrIcon from '../../assets/icons/icons8-qr-100.png';
 
 import './styles.css';
+
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || "";
 
 const Inventory = () => {
   const [products, setProducts] = useState([]);
@@ -30,11 +33,10 @@ const Inventory = () => {
   const [hasMore, setHasMore] = useState(true);
   const PRODUCTS_PER_PAGE = 10;
 
-  // Nuevos estados para la carga masiva
-  const [jsonFile, setJsonFile] = useState(null);
-  const [isBulkLoading, setIsBulkLoading] = useState(false);
-  const [bulkLoadProgress, setBulkLoadProgress] = useState({ processed: 0, success: 0, errors: 0, total: 0 });
-  const [bulkLoadErrorMessages, setBulkLoadErrorMessages] = useState([]);
+  // Estados para carga con IA (capturas de pantalla)
+  const [aiImageFile, setAiImageFile] = useState(null);
+  const [aiImagePreviewUrl, setAiImagePreviewUrl] = useState('');
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const navigate = useNavigate();
   const { getProducts, addProduct, deleteProduct, user } = useFirestoreContext();
@@ -78,6 +80,14 @@ const Inventory = () => {
     loadInitialProducts();
   }, [loadInitialProducts]);
 
+  useEffect(() => {
+    return () => {
+      if (aiImagePreviewUrl) {
+        URL.revokeObjectURL(aiImagePreviewUrl);
+      }
+    };
+  }, [aiImagePreviewUrl]);
+
   const handleSubmit = async (e) => {
     setIsLoading(true);
     e.preventDefault();
@@ -113,91 +123,47 @@ const Inventory = () => {
     }
   };
 
-  // Funciones para la carga masiva de JSON
-  const handleJsonFileChange = (event) => {
-    setJsonFile(event.target.files[0]);
-    // Limpiar errores/progreso previos al seleccionar un nuevo archivo
-    setBulkLoadProgress({ processed: 0, success: 0, errors: 0, total: 0 });
-    setBulkLoadErrorMessages([]);
-  };
-
-  const handleBulkUpload = async () => {
-    if (!jsonFile) {
-      alert("Por favor, selecciona un archivo JSON primero.");
+  const handleAiImageChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setAiImageFile(null);
+      setAiImagePreviewUrl('');
       return;
     }
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecciona un archivo de imagen.');
+      event.target.value = '';
+      return;
+    }
+    if (aiImagePreviewUrl) {
+      URL.revokeObjectURL(aiImagePreviewUrl);
+    }
+    setAiImageFile(file);
+    setAiImagePreviewUrl(URL.createObjectURL(file));
+  };
 
-    setIsBulkLoading(true);
-    setBulkLoadProgress({ processed: 0, success: 0, errors: 0, total: 0 });
-    setBulkLoadErrorMessages([]);
+  const handleAiAnalyze = () => {
+    if (!aiImageFile) {
+      alert('Por favor, sube una imagen primero.');
+      return;
+    }
+    if (!OPENROUTER_API_KEY) {
+      alert('Falta la API key de OpenRouter. Configura VITE_OPENROUTER_API_KEY.');
+      return;
+    }
+    setIsAiModalOpen(true);
+  };
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const productsToUpload = JSON.parse(event.target.result);
-        if (!Array.isArray(productsToUpload)) {
-          throw new Error("El archivo JSON debe contener un array de productos.");
-        }
+  const handleProductsDetected = (count) => {
+    // Refresh products list after successful save
+    loadInitialProducts();
+  };
 
-        setBulkLoadProgress(prev => ({ ...prev, total: productsToUpload.length }));
-        let currentSuccess = 0;
-        let currentErrors = 0;
-        const errorMessages = [];
-
-        for (let i = 0; i < productsToUpload.length; i++) {
-          const product = productsToUpload[i];
-          try {
-            if (!product.name || product.price === undefined || product.stock === undefined) {
-              throw new Error(`Producto en índice ${i} (${product.name || 'Nombre desconocido'}) tiene datos faltantes o inválidos. Campos requeridos: name, price, size, color, stock.`);
-            }
-            // Asegurar tipos de datos antes de enviar a addProduct
-            await addProduct(
-              String(product.name),
-              Number(product.price),
-              product.details || '',
-              Number(product.stock),
-              product.imageUrl || null
-            );
-            currentSuccess++;
-          } catch (error) {
-            currentErrors++;
-            console.error(`Error al agregar producto ${product.name || `en índice ${i}`}:`, error);
-            errorMessages.push(`Error con ${product.name || `producto en índice ${i}`}: ${error.message}`);
-          }
-          setBulkLoadProgress({
-            processed: i + 1,
-            success: currentSuccess,
-            errors: currentErrors,
-            total: productsToUpload.length
-          });
-        }
-        setBulkLoadErrorMessages(errorMessages);
-        if (errorMessages.length > 0) {
-          alert(`Carga masiva completada con errores. ${currentSuccess} productos agregados, ${currentErrors} errores. Revise los mensajes de error.`);
-        } else {
-          alert(`Carga masiva completada exitosamente. ${currentSuccess} productos agregados.`);
-        }
-        await loadInitialProducts(); // Recargar productos para reflejar los cambios
-      } catch (error) {
-        console.error("Error al procesar el archivo JSON:", error);
-        const errorMessage = `Error al procesar el archivo JSON: ${error.message}`;
-        alert(errorMessage);
-        setBulkLoadErrorMessages(prevMessages => [...prevMessages, errorMessage]);
-      } finally {
-        setIsBulkLoading(false);
-        setJsonFile(null);
-        if (document.getElementById('json-upload-input')) {
-          document.getElementById('json-upload-input').value = ''; // Resetear el input de archivo
-        }
-      }
-    };
-    reader.onerror = () => {
-      const readErrorMessage = "Error al leer el archivo.";
-      alert(readErrorMessage);
-      setBulkLoadErrorMessages(prevMessages => [...prevMessages, readErrorMessage]);
-      setIsBulkLoading(false);
-    };
-    reader.readAsText(jsonFile);
+  const handleCloseAiModal = () => {
+    setIsAiModalOpen(false);
+    // Reset AI states when closing modal
+    setAiImageFile(null);
+    setAiImagePreviewUrl('');
   };
 
   return (
@@ -228,54 +194,44 @@ const Inventory = () => {
 
       <ProductSearch products={products} setQRcode={setQRcode} />
 
-      {/* Sección de Carga Masiva de JSON */}
+      {/* Sección de Carga con IA */}
       <div className="bulkUploadSection" style={{ margin: '20px 0', padding: '20px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-        <h3 className="subtitle" style={{ marginTop: '0', marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>JSON for the developer, Ariel</h3>
+        <h3 className="subtitle" style={{ marginTop: '0', marginBottom: '15px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>CARGAR CON IA</h3>
         <input
           type="file"
-          id="json-upload-input"
-          accept=".json"
-          onChange={handleJsonFileChange}
-          disabled={isBulkLoading}
+          id="ai-image-upload-input"
+          accept="image/*"
+          onChange={handleAiImageChange}
           style={{ display: 'block', margin: '15px 0', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', width: 'calc(100% - 22px)' }}
         />
+        {aiImagePreviewUrl && (
+          <div style={{ marginBottom: '15px' }}>
+            <img
+              src={aiImagePreviewUrl}
+              alt="Vista previa de la captura"
+              style={{ maxWidth: '100%', maxHeight: '260px', borderRadius: '6px', border: '1px solid #ddd' }}
+            />
+          </div>
+        )}
         <button
-          onClick={handleBulkUpload}
-          disabled={!jsonFile || isBulkLoading}
+          onClick={handleAiAnalyze}
+          disabled={!aiImageFile}
           className="addButton-bulk"
           style={{
             marginRight: '10px',
-            backgroundColor: (!jsonFile || isBulkLoading) ? '#bdc3c7' : '#27ae60', // verde para activo, gris para deshabilitado
+            backgroundColor: !aiImageFile ? '#bdc3c7' : '#27ae60',
             color: 'white',
             padding: '10px 20px',
             fontSize: '16px',
-            cursor: (!jsonFile || isBulkLoading) ? 'not-allowed' : 'pointer',
-            opacity: (!jsonFile || isBulkLoading) ? 0.7 : 1
+            cursor: !aiImageFile ? 'not-allowed' : 'pointer',
+            opacity: !aiImageFile ? 0.7 : 1
           }}
         >
-          {isBulkLoading ? 'Cargando JSON...' : 'Iniciar Carga de JSON'}
+          Analizar con IA
         </button>
-        {isBulkLoading && (
-          <div style={{ marginTop: '15px' }}>
-            <p>Procesando: {bulkLoadProgress.processed} de {bulkLoadProgress.total} productos.</p>
-            <p style={{ color: 'green' }}>Éxitos: {bulkLoadProgress.success}</p>
-            <p style={{ color: 'red' }}>Errores: {bulkLoadProgress.errors}</p>
-            <LoadingComponent isLoading={true} />
-          </div>
-        )}
-        {bulkLoadErrorMessages.length > 0 && !isBulkLoading && (
-          <div style={{ marginTop: '20px', color: '#c0392b', border: '1px solid #e74c3c', padding: '15px', borderRadius: '4px', backgroundColor: '#fbeae5' }}>
-            <h4 style={{ marginTop: '0', marginBottom: '10px' }}>Detalles de errores en la carga:</h4>
-            <ul style={{ paddingLeft: '20px', margin: '0', maxHeight: '150px', overflowY: 'auto' }}>
-              {bulkLoadErrorMessages.map((msg, index) => (
-                <li key={index} style={{ marginBottom: '5px' }}>{msg}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {!isBulkLoading && bulkLoadProgress.processed > 0 && bulkLoadErrorMessages.length === 0 && bulkLoadProgress.success === bulkLoadProgress.total && (
-          <p style={{ marginTop: '15px', color: '#27ae60', fontWeight: 'bold' }}>¡Todos los productos ({bulkLoadProgress.success}) se cargaron exitosamente!</p>
-        )}
+        <p style={{ marginTop: '15px', color: '#666' }}>
+          Sube una captura de catálogo y chatea con la IA para extraer los productos automáticamente.
+        </p>
       </div>
 
       <section>
@@ -367,6 +323,15 @@ const Inventory = () => {
         isOpen={!!selectedImage}
         imageSrc={selectedImage}
         onClose={() => setSelectedImage(null)}
+      />
+
+      <AIChatModal
+        isOpen={isAiModalOpen}
+        onClose={handleCloseAiModal}
+        aiImageFile={aiImageFile}
+        aiImagePreviewUrl={aiImagePreviewUrl}
+        onProductsDetected={handleProductsDetected}
+        addProduct={addProduct}
       />
     </div>
   );

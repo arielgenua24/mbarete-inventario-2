@@ -387,6 +387,33 @@
 }
 
 
+.load-more-orders-btn {
+  display: block;
+  margin: 24px auto;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #0a84ff 0%, #0066cc 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 20px rgba(10, 132, 255, 0.25);
+}
+
+.load-more-orders-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.no-more-orders-text {
+  text-align: center;
+  margin: 20px;
+  color: #6e6e73;
+  font-size: 14px;
+}
+
 @media (max-width: 900px) {
   .orders-header {
     flex-direction: column;

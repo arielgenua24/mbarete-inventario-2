@@ -16,17 +16,18 @@ import {
 
 import { db as firestore } from '../firebaseSetUp';
 import {
-  collection,
   doc,
+  collection,
+  getDocs,
   writeBatch,
   serverTimestamp,
-  getDoc,
   runTransaction
 } from 'firebase/firestore';
 
 class SyncWorker {
   constructor() {
     this.isRunning = false;
+    this._isProcessingQueue = false; // Mutex guard to prevent concurrent processQueue execution
     this.processingInterval = null;
     this.maxRetries = 3;
     this.retryDelays = [1000, 5000, 30000]; // 1s, 5s, 30s
@@ -83,13 +84,25 @@ class SyncWorker {
   /**
    * Process sync queue
    * Main processing loop
+   *
+   * FIX: Mutex guard prevents concurrent execution.
+   * Without this, both SyncWorker.start() interval and SyncScheduler's
+   * forceProcessQueue() can trigger processQueue() simultaneously,
+   * causing the same sync task to be processed twice (race condition).
    */
   async processQueue() {
+    // GUARD: Prevent concurrent execution (Fix for race condition bug)
+    if (this._isProcessingQueue) {
+      console.log('⚙️ processQueue already running, skipping concurrent call');
+      return;
+    }
+
     if (!navigator.onLine) {
       console.log('📴 Offline, skipping queue processing');
       return;
     }
 
+    this._isProcessingQueue = true;
     try {
       // Get pending tasks sorted by priority and nextRetryAt
       const tasks = await getPendingSyncTasks(this.BATCH_SIZE);
@@ -106,6 +119,8 @@ class SyncWorker {
       }
     } catch (error) {
       console.error('❌ Error processing sync queue:', error);
+    } finally {
+      this._isProcessingQueue = false; // Always release the lock
     }
   }
 
@@ -229,21 +244,13 @@ class SyncWorker {
         };
       }
 
-      // Check if order already exists in Firestore
-      const orderRef = doc(firestore, 'orders', orderId);
-      const orderSnap = await getDoc(orderRef);
-
-      if (orderSnap.exists()) {
-        // Order already synced, mark as completed
-        await updatePendingOrder(orderId, { syncStatus: 'synced' });
-        console.log(`✅ Order ${orderId} already exists in Firestore`);
-        return {
-          success: true,
-          data: { message: 'Order already exists in Firestore' }
-        };
-      }
-
       console.log(`📤 Syncing order to Firestore with atomic stock updates:`, order);
+
+      // FIX: Order existence check moved INSIDE the transaction (see below).
+      // Previously, getDoc() was called outside the transaction, allowing two
+      // concurrent calls to both see exists() === false and proceed to create
+      // the order twice (race condition causing double stock reduction).
+      const orderRef = doc(firestore, 'orders', orderId);
 
       // Use Firestore transaction for atomic stock updates
       const result = await runTransaction(firestore, async (transaction) => {
@@ -255,6 +262,16 @@ class SyncWorker {
         // ============================================
         // PHASE 1: ALL READS FIRST
         // ============================================
+
+        // Step 0: Check if order already exists (INSIDE transaction = atomic)
+        // FIX: Using transaction.get() instead of getDoc() ensures this check
+        // is atomic with the subsequent writes. If two concurrent calls reach
+        // this point, Firestore's transaction system will retry/abort one of them.
+        const orderSnap = await transaction.get(orderRef);
+        if (orderSnap.exists()) {
+          // Order was already synced (possibly by a concurrent call)
+          return { alreadyExists: true, orderId };
+        }
 
         // Step A: AGGREGATE stock deltas by productId
         // CRITICAL FIX: If the same product has multiple variants (size/color),
@@ -378,8 +395,21 @@ class SyncWorker {
           console.log(`✅ Stock update: ${currentStock} → ${projectedStock} (delta: ${delta})`);
         }
 
-        return { orderId };
+        return { orderId, alreadyExists: false };
       });
+
+      // Handle the "already exists" case after the transaction
+      // FIX: Even if the order exists, the products subcollection might be missing
+      // (e.g., if the batch write failed on a previous attempt)
+      if (result.alreadyExists) {
+        await this.ensureProductsSubcollection(orderId, order.products);
+        await updatePendingOrder(orderId, { syncStatus: 'synced' });
+        console.log(`✅ Order ${orderId} already exists in Firestore (detected inside transaction)`);
+        return {
+          success: true,
+          data: { message: 'Order already exists in Firestore' }
+        };
+      }
 
       // Update order with formatted fecha (for backwards compatibility)
       const now = new Date();
@@ -396,32 +426,7 @@ class SyncWorker {
         .commit();
 
       // Create products subcollection (for backwards compatibility with ProductsVerification)
-      // This allows ProductsVerification to work exactly as before
-      console.log('📦 Creating products subcollection for backwards compatibility...');
-
-      const batch = writeBatch(firestore);
-
-      // Each cart item (product + variant combination) gets its own document
-      // Firestore will auto-generate unique IDs for each document
-      for (const product of order.products) {
-        // Use Firestore auto-generated ID (don't specify document ID)
-        // This ensures each variant combination gets its own document
-        const productSubCollectionRef = collection(firestore, 'orders', orderId, 'products');
-        const newProductDocRef = doc(productSubCollectionRef); // Auto-generate ID
-
-        batch.set(newProductDocRef, {
-          productSnapshot: product.productSnapshot,
-          stock: product.quantity,
-          verified: 0, // Start with 0 verified
-          selectedVariants: product.selectedVariants,
-          createdAt: serverTimestamp(),
-          // Store original productId for reference (in case needed)
-          productId: product.productId
-        });
-      }
-
-      await batch.commit();
-      console.log(`✅ Created ${order.products.length} product documents in subcollection`);
+      await this.ensureProductsSubcollection(orderId, order.products);
 
       // Update metadata catalog (products were updated)
       const metadataRef = doc(firestore, 'metadata', 'catalog');
@@ -456,6 +461,43 @@ class SyncWorker {
         error: error.message
       };
     }
+  }
+
+  /**
+   * Ensures the products subcollection exists for an order.
+   * Uses deterministic IDs so the operation is idempotent (safe to retry).
+   *
+   * @param {string} orderId - The order ID
+   * @param {Array} products - The products array from the order
+   */
+  async ensureProductsSubcollection(orderId, products) {
+    const productsCollRef = collection(firestore, 'orders', orderId, 'products');
+    const existingDocs = await getDocs(productsCollRef);
+
+    if (existingDocs.size > 0) {
+      console.log(`📦 Products subcollection already exists for ${orderId} (${existingDocs.size} docs)`);
+      return;
+    }
+
+    console.log(`📦 Creating products subcollection for ${orderId}...`);
+    const batch = writeBatch(firestore);
+
+    for (const [index, product] of products.entries()) {
+      const deterministicId = `${product.productId}_${index}`;
+      const productDocRef = doc(firestore, 'orders', orderId, 'products', deterministicId);
+
+      batch.set(productDocRef, {
+        productSnapshot: product.productSnapshot,
+        stock: product.quantity,
+        verified: 0,
+        selectedVariants: product.selectedVariants,
+        createdAt: serverTimestamp(),
+        productId: product.productId
+      });
+    }
+
+    await batch.commit();
+    console.log(`✅ Created ${products.length} product documents in subcollection for ${orderId}`);
   }
 
   /**

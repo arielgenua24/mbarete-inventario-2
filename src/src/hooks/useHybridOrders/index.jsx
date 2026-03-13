@@ -3,11 +3,11 @@ import useLocalOrders from '../useLocalOrders';
 import useFirestoreContext from '../useFirestoreContext';
 
 /**
- * useHybridOrders - Combines local pending orders with Firestore orders
+ * useHybridOrders - Combines local pending orders with paginated Firestore orders
  *
- * This hook provides a unified view of:
- * 1. Local pending orders (not yet synced to Firestore)
- * 2. Synced orders from Firestore
+ * This hook provides:
+ * 1. getLocalOrders() - All pending local orders (IndexedDB), always fetched in full
+ * 2. getFirestoreOrdersPage() - One page of synced Firestore orders (cursor-based)
  *
  * Each order includes a syncStatus indicator:
  * - 'pending': Only in IndexedDB, waiting to sync
@@ -19,36 +19,22 @@ export default function useHybridOrders() {
   const [error, setError] = useState(null);
 
   const { getPendingOrders } = useLocalOrders();
-  const { filterOrdersByDate } = useFirestoreContext();
+  const { getOrdersPaginated } = useFirestoreContext();
 
   /**
-   * Get all orders (local + Firestore)
-   * Merges pending local orders with Firestore orders
-   *
-   * @returns {Array} Combined orders with syncStatus
+   * Get all local/pending orders from IndexedDB.
+   * Only returns orders not yet synced (pending, syncing, failed).
+   * These are always few items, so we fetch all.
    */
-  const getAllOrders = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
+  const getLocalOrders = useCallback(async () => {
     try {
-      // Fetch from both sources in parallel
-      const [localOrders, firestoreOrders] = await Promise.all([
-        getPendingOrders(),
-        filterOrdersByDate()
-      ]);
+      const localOrders = await getPendingOrders();
 
-      console.log('📦 Local orders:', localOrders);
-      console.log('☁️ Firestore orders:', firestoreOrders);
-
-      // Create a map of Firestore order IDs for quick lookup
-      const firestoreOrderIds = new Set(firestoreOrders.map(o => o.id));
-
-      // Transform local orders to display format
+      // Only show orders that are NOT yet synced to Firestore
+      // Synced orders will appear in the paginated Firestore results
       const localOrdersTransformed = localOrders
-        .filter(order => !firestoreOrderIds.has(order.orderId)) // Only include if NOT in Firestore
+        .filter(order => order.syncStatus !== 'synced')
         .map(order => ({
-          // Use orderId as id for consistency
           id: order.orderId,
 
           // New format fields
@@ -70,69 +56,55 @@ export default function useHybridOrders() {
 
           // Sync metadata
           syncStatus: order.syncStatus || 'pending',
-          isLocal: true // Flag to indicate this is a local order
+          isLocal: true
         }));
 
-      // Add syncStatus to Firestore orders
-      const firestoreOrdersEnriched = firestoreOrders.map(order => ({
+      return localOrdersTransformed;
+    } catch (err) {
+      console.error('❌ Error fetching local orders:', err);
+      return [];
+    }
+  }, [getPendingOrders]);
+
+  /**
+   * Get one page of Firestore orders (cursor-based pagination)
+   * @param {number} pageSize - Orders per page
+   * @param {DocumentSnapshot|null} startAfterDoc - Cursor for next page
+   * @returns {{ orders: Array, lastVisibleDoc, hasMore: boolean }}
+   */
+  const getFirestoreOrdersPage = useCallback(async (pageSize = 10, startAfterDoc = null) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { orders, lastVisibleDoc } = await getOrdersPaginated(pageSize, startAfterDoc);
+
+      const enrichedOrders = orders.map(order => ({
         ...order,
         syncStatus: 'synced',
         isLocal: false
       }));
 
-      // Combine and sort by date (most recent first)
-      const allOrders = [...localOrdersTransformed, ...firestoreOrdersEnriched];
-
-      // Sort by date
-      allOrders.sort((a, b) => {
-        const dateA = getOrderDate(a);
-        const dateB = getOrderDate(b);
-        return dateB - dateA;
-      });
-
-      console.log('📊 Combined orders:', allOrders);
-
       setIsLoading(false);
-      return allOrders;
+      return {
+        orders: enrichedOrders,
+        lastVisibleDoc,
+        hasMore: orders.length === pageSize
+      };
     } catch (err) {
-      console.error('❌ Error fetching hybrid orders:', err);
+      console.error('❌ Error fetching Firestore orders page:', err);
       setError(err.message);
       setIsLoading(false);
-      return [];
+      return { orders: [], lastVisibleDoc: null, hasMore: false };
     }
-  }, [getPendingOrders, filterOrdersByDate]);
+  }, [getOrdersPaginated]);
 
   return {
-    getAllOrders,
+    getLocalOrders,
+    getFirestoreOrdersPage,
     isLoading,
     error
   };
-}
-
-/**
- * Get date from order (handles both formats)
- */
-function getOrderDate(order) {
-  // New format: createdAt
-  if (order.createdAt) {
-    if (order.createdAt.toDate) {
-      return order.createdAt.toDate();
-    }
-    if (order.createdAt instanceof Date) {
-      return order.createdAt;
-    }
-    return new Date(order.createdAt);
-  }
-
-  // Old format: fecha (string)
-  if (order.fecha) {
-    const [datePart, timePart] = order.fecha.split(', ');
-    const [day, month, year] = datePart.split('/');
-    const formattedDate = `${year}-${month}-${day}`;
-    return new Date(`${formattedDate}T${timePart}`);
-  }
-
-  return new Date(0);
 }
 
 /**
