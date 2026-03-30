@@ -1,18 +1,20 @@
 import { useState, useCallback } from 'react';
 import useLocalOrders from '../useLocalOrders';
 import useFirestoreContext from '../useFirestoreContext';
+import {
+  ORDER_SCOPES,
+  matchesOrderScope,
+  normalizeOrderLocation,
+} from '../../utils/orderLocations';
+
+const RAW_FIRESTORE_BATCH_SIZE = 20;
 
 /**
  * useHybridOrders - Combines local pending orders with paginated Firestore orders
  *
  * This hook provides:
- * 1. getLocalOrders() - All pending local orders (IndexedDB), always fetched in full
- * 2. getFirestoreOrdersPage() - One page of synced Firestore orders (cursor-based)
- *
- * Each order includes a syncStatus indicator:
- * - 'pending': Only in IndexedDB, waiting to sync
- * - 'syncing': Currently being synced (in progress)
- * - 'synced': Successfully synced to Firestore
+ * 1. getLocalOrders(scope) - Local pending orders filtered by branch scope
+ * 2. getFirestoreOrdersPage(pageSize, startAfterDoc, scope) - Branch-aware paginated Firestore orders
  */
 export default function useHybridOrders() {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,75 +23,85 @@ export default function useHybridOrders() {
   const { getPendingOrders } = useLocalOrders();
   const { getOrdersPaginated } = useFirestoreContext();
 
-  /**
-   * Get all local/pending orders from IndexedDB.
-   * Only returns orders not yet synced (pending, syncing, failed).
-   * These are always few items, so we fetch all.
-   */
-  const getLocalOrders = useCallback(async () => {
+  const getLocalOrders = useCallback(async (scope = ORDER_SCOPES.TOTAL) => {
     try {
       const localOrders = await getPendingOrders();
 
-      // Only show orders that are NOT yet synced to Firestore
-      // Synced orders will appear in the paginated Firestore results
-      const localOrdersTransformed = localOrders
+      return localOrders
         .filter(order => order.syncStatus !== 'synced')
-        .map(order => ({
-          id: order.orderId,
-
-          // New format fields
-          orderCode: order.orderCode,
-          customerName: order.customerName,
-          phone: order.phone,
-          address: order.address,
-          products: order.products,
-          totalAmount: order.totalAmount,
-          status: order.status,
-          createdAt: order.createdAt,
-
-          // Legacy format fields (for backwards compatibility with UI)
-          cliente: order.customerName,
-          telefono: order.phone,
-          direccion: order.address,
-          estado: order.status,
-          fecha: formatDateToSpanish(order.createdAt),
-
-          // Sync metadata
-          syncStatus: order.syncStatus || 'pending',
-          isLocal: true
-        }));
-
-      return localOrdersTransformed;
+        .map(order => normalizeOrderForUi(order, { isLocal: true }))
+        .filter(order => matchesOrderScope(order, scope));
     } catch (err) {
       console.error('❌ Error fetching local orders:', err);
       return [];
     }
   }, [getPendingOrders]);
 
-  /**
-   * Get one page of Firestore orders (cursor-based pagination)
-   * @param {number} pageSize - Orders per page
-   * @param {DocumentSnapshot|null} startAfterDoc - Cursor for next page
-   * @returns {{ orders: Array, lastVisibleDoc, hasMore: boolean }}
-   */
-  const getFirestoreOrdersPage = useCallback(async (pageSize = 10, startAfterDoc = null) => {
+  const getFirestoreOrdersPage = useCallback(async (
+    pageSize = 10,
+    startAfterDoc = null,
+    scope = ORDER_SCOPES.TOTAL
+  ) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const { orders, lastVisibleDoc } = await getOrdersPaginated(pageSize, startAfterDoc);
+      const scopedOrders = [];
+      const seenIds = new Set();
+      let cursor = startAfterDoc;
 
-      const enrichedOrders = orders.map(order => ({
-        ...order,
-        syncStatus: 'synced',
-        isLocal: false
-      }));
+      while (scopedOrders.length < pageSize) {
+        const { orders, docs } = await getOrdersPaginated(RAW_FIRESTORE_BATCH_SIZE, cursor);
+
+        if (!orders.length || !docs.length) {
+          setIsLoading(false);
+          return {
+            orders: scopedOrders,
+            lastVisibleDoc: cursor,
+            hasMore: false
+          };
+        }
+
+        for (let index = 0; index < orders.length; index += 1) {
+          const rawOrder = normalizeOrderForUi(orders[index], { isLocal: false });
+          const consumedDoc = docs[index];
+
+          if (matchesOrderScope(rawOrder, scope) && !seenIds.has(rawOrder.id)) {
+            scopedOrders.push(rawOrder);
+            seenIds.add(rawOrder.id);
+          }
+
+          if (scopedOrders.length === pageSize) {
+            const hasMoreInCurrentBatch = index < orders.length - 1;
+            const maybeMoreAfterBatch = orders.length === RAW_FIRESTORE_BATCH_SIZE;
+
+            setIsLoading(false);
+            return {
+              orders: scopedOrders,
+              lastVisibleDoc: consumedDoc,
+              hasMore: hasMoreInCurrentBatch || maybeMoreAfterBatch
+            };
+          }
+        }
+
+        if (orders.length < RAW_FIRESTORE_BATCH_SIZE) {
+          const lastConsumedDoc = docs[docs.length - 1] || cursor;
+          setIsLoading(false);
+          return {
+            orders: scopedOrders,
+            lastVisibleDoc: lastConsumedDoc,
+            hasMore: false
+          };
+        }
+
+        cursor = docs[docs.length - 1];
+      }
 
       setIsLoading(false);
       return {
-        orders: enrichedOrders,
-        lastVisibleDoc,
-        hasMore: orders.length === pageSize
+        orders: scopedOrders,
+        lastVisibleDoc: cursor,
+        hasMore: false
       };
     } catch (err) {
       console.error('❌ Error fetching Firestore orders page:', err);
@@ -107,12 +119,36 @@ export default function useHybridOrders() {
   };
 }
 
-/**
- * Format ISO date to Spanish format
- * "2026-01-29T12:00:00.000Z" → "29/01/2026, 12:00"
- */
+function normalizeOrderForUi(order, { isLocal }) {
+  const orderDate = order.fecha || formatDateToSpanish(order.createdAt);
+
+  return {
+    ...order,
+    id: order.id || order.orderId,
+    orderCode: order.orderCode || order.id || order.orderId,
+    customerName: order.customerName || order.cliente || 'Cliente sin nombre',
+    phone: order.phone || order.telefono || 'Sin teléfono',
+    address: order.address || order.direccion || 'Sin dirección',
+    totalAmount: Number(order.totalAmount || order.total || 0),
+    status: order.status || order.estado || 'pendiente',
+    cliente: order.cliente || order.customerName || 'Cliente sin nombre',
+    telefono: order.telefono || order.phone || 'Sin teléfono',
+    direccion: order.direccion || order.address || 'Sin dirección',
+    estado: order.estado || order.status || 'pendiente',
+    fecha: orderDate,
+    location: normalizeOrderLocation(order),
+    syncStatus: order.syncStatus || (isLocal ? 'pending' : 'synced'),
+    isLocal
+  };
+}
+
 function formatDateToSpanish(isoString) {
-  const date = new Date(isoString);
+  if (!isoString) {
+    return 'Sin fecha';
+  }
+
+  const date = isoString?.toDate ? isoString.toDate() : new Date(isoString);
+
   return date.toLocaleDateString('es-ES', {
     day: '2-digit',
     month: '2-digit',

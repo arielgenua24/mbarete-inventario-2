@@ -1,210 +1,297 @@
-.ed-container {
-  padding: 20px;
+.earnings-shell {
   min-height: 100vh;
-  background-color: #f5f5f7;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 24px 18px 40px;
+  background:
+    radial-gradient(circle at top left, rgba(217, 119, 6, 0.12), transparent 34%),
+    radial-gradient(circle at top right, rgba(32, 79, 74, 0.12), transparent 28%),
+    linear-gradient(180deg, #fdf7ef 0%, #ffffff 36%, #f8faf7 100%);
   color: #1d1d1f;
+  font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
-.ed-header-row {
+.earnings-content {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.earnings-header-row {
   display: flex;
   align-items: center;
-  margin-bottom: 24px;
-  position: relative;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.ed-back-btn {
-  background: none;
-  border: none;
-  color: #007aff;
-  font-size: 17px;
-  cursor: pointer;
-  padding: 0;
-  margin-right: 16px;
-}
-
-.ed-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-  flex-grow: 1;
-  text-align: center;
-}
-
-.ed-total-banner {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
+.earnings-header-copy {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  gap: 4px;
 }
 
-.ed-banner-label {
-  font-size: 13px;
-  color: #86868b;
-  margin-bottom: 4px;
-}
-
-.ed-banner-amount {
-  font-size: 32px;
+.earnings-header-kicker {
+  font-size: 12px;
   font-weight: 700;
-  color: #1d1d1f;
-}
-
-.ed-list {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.ed-list-item {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #e5e5e5;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.ed-list-item:last-child {
-  border-bottom: none;
-}
-
-.ed-list-item:active {
-  background-color: #f5f5f7;
-}
-
-.ed-item-info {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.ed-item-name {
-  font-size: 17px;
-  font-weight: 500;
-  color: #1d1d1f;
-}
-
-.ed-item-sub {
-  font-size: 13px;
-  color: #86868b;
-  margin-top: 2px;
-}
-
-.ed-item-amount {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin-right: 8px;
-}
-
-.ed-chevron {
-  color: #c7c7cc;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.ed-empty {
-  padding: 40px;
-  text-align: center;
-  color: #86868b;
-}
-
-/* Detail View Specifics */
-.ed-detail-view {
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.ed-order-summary {
-  background: white;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.ed-order-id {
-  font-family: monospace;
-  color: #86868b;
-}
-
-.ed-order-total {
-  font-size: 20px;
-  font-weight: 700;
-  color: #007aff;
-}
-
-/* Customer Details */
-.ed-customer-details {
-  background: white;
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.ed-section-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #86868b;
-  margin-bottom: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #6e6e73;
 }
 
-.ed-detail-row {
+.earnings-header-row h2 {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+}
+
+.earnings-back-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  padding: 10px 16px;
+  color: #0a84ff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(17, 24, 39, 0.08);
+}
+
+.earnings-period-switcher {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+  margin-bottom: 18px;
+}
+
+.earnings-period-pill {
+  border: none;
+  background: transparent;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6e6e73;
+  cursor: pointer;
+}
+
+.earnings-period-pill.active {
+  background: #1d1d1f;
+  color: #ffffff;
+}
+
+.earnings-total-banner,
+.earnings-summary-card,
+.earnings-info-card,
+.earnings-products-card,
+.earnings-list-card {
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(29, 29, 31, 0.07);
+  box-shadow: 0 18px 34px rgba(17, 24, 39, 0.08);
+}
+
+.earnings-total-banner {
+  padding: 24px;
   display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f7;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
 }
 
-.ed-detail-row:last-child {
+.earnings-total-banner span {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6e6e73;
+}
+
+.earnings-total-banner strong {
+  font-size: clamp(32px, 6vw, 46px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.earnings-summary-card {
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.earnings-summary-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6e6e73;
+}
+
+.earnings-summary-card strong {
+  font-size: 20px;
+}
+
+.earnings-scope-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.earnings-scope-pill--central {
+  background: rgba(32, 79, 74, 0.12);
+  color: #204f4a;
+}
+
+.earnings-scope-pill--local_avellaneda {
+  background: rgba(217, 119, 6, 0.12);
+  color: #9a4c00;
+}
+
+.earnings-info-card,
+.earnings-products-card {
+  padding: 22px;
+  margin-bottom: 18px;
+}
+
+.earnings-info-card h3,
+.earnings-products-card h3 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.earnings-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(29, 29, 31, 0.08);
+}
+
+.earnings-info-row:last-child {
   border-bottom: none;
 }
 
-.ed-detail-label {
-  color: #86868b;
-  font-size: 15px;
+.earnings-info-row span {
+  color: #6e6e73;
 }
 
-.ed-detail-value {
-  font-weight: 500;
-  color: #1d1d1f;
-  font-size: 15px;
-  text-align: right;
+.earnings-products-list,
+.earnings-list-card {
+  display: flex;
+  flex-direction: column;
 }
 
-/* Product Image */
-.ed-product-image {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+.earnings-list-card {
+  overflow: hidden;
+}
+
+.earnings-list-row,
+.earnings-product-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  border: none;
+  background: transparent;
+  text-align: left;
+}
+
+.earnings-list-row {
+  cursor: pointer;
+  border-bottom: 1px solid rgba(29, 29, 31, 0.08);
+}
+
+.earnings-list-row:last-child {
+  border-bottom: none;
+}
+
+.earnings-list-row:hover {
+  background: rgba(245, 245, 247, 0.8);
+}
+
+.earnings-list-copy,
+.earnings-product-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.earnings-list-copy strong,
+.earnings-product-copy strong {
+  font-size: 16px;
+}
+
+.earnings-list-copy small,
+.earnings-product-copy span {
+  color: #6e6e73;
+  font-size: 13px;
+}
+
+.earnings-product-item {
+  border-bottom: 1px solid rgba(29, 29, 31, 0.08);
+}
+
+.earnings-product-item:last-child {
+  border-bottom: none;
+}
+
+.earnings-product-image {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
   object-fit: cover;
-  margin-right: 12px;
-  background-color: #f5f5f7;
   cursor: zoom-in;
-  transition: transform 0.2s;
+  background: #f5f5f7;
 }
 
-.ed-product-image:hover {
-  transform: scale(1.05);
+.earnings-product-total {
+  font-weight: 700;
+}
+
+.earnings-empty {
+  padding: 34px 22px;
+  text-align: center;
+  color: #6e6e73;
+}
+
+@media (max-width: 560px) {
+  .earnings-shell {
+    padding: 18px 12px 32px;
+  }
+
+  .earnings-header-row {
+    flex-wrap: wrap;
+  }
+
+  .earnings-period-switcher {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .earnings-summary-card,
+  .earnings-info-row,
+  .earnings-list-row,
+  .earnings-product-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .earnings-list-row span,
+  .earnings-product-total {
+    font-size: 16px;
+  }
 }

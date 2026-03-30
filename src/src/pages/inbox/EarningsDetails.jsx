@@ -1,302 +1,361 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import useFirestoreContext from '../../hooks/useFirestoreContext'
-import LoadingComponent from '../../components/Loading'
-import ImageModal from '../../components/ImageModal'
-import './EarningsDetails.css'
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import useFirestoreContext from '../../hooks/useFirestoreContext';
+import LoadingComponent from '../../components/Loading';
+import ImageModal from '../../components/ImageModal';
+import {
+  getOrderTotalValue,
+  getScopeLabel,
+  matchesOrderScope,
+  ORDER_SCOPES,
+} from '../../utils/orderLocations';
+import {
+  filterOrdersByPeriod,
+  formatCurrency,
+  getOrderDate,
+  groupOrdersByDay,
+  REPORT_PERIODS,
+  sumOrders,
+} from '../../utils/orderReporting';
+import './EarningsDetails.css';
+
+const VALID_SCOPES = [ORDER_SCOPES.LOCAL_AVELLANEDA, ORDER_SCOPES.CENTRAL, ORDER_SCOPES.TOTAL];
+const VALID_PERIODS = [REPORT_PERIODS.DAILY, REPORT_PERIODS.WEEKLY, REPORT_PERIODS.MONTHLY];
 
 function EarningsDetails() {
-  const { period } = useParams()
-  const navigate = useNavigate()
-  const { filterOrdersByDate, getProductsByOrder } = useFirestoreContext()
-  
-  const [orders, setOrders] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedDay, setSelectedDay] = useState(null)
-  const [selectedOrder, setSelectedOrder] = useState(null)
-  const [modalImage, setModalImage] = useState(null)
+  const { period, scope } = useParams();
+  const navigate = useNavigate();
+  const { filterOrdersByDate, getProductsByOrder } = useFirestoreContext();
 
-  // Fetch orders
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [modalImage, setModalImage] = useState(null);
+
+  const activeScope = VALID_SCOPES.includes(scope) ? scope : ORDER_SCOPES.TOTAL;
+  const activePeriod = VALID_PERIODS.includes(period) ? period : REPORT_PERIODS.DAILY;
+  const scopeLabel = getScopeLabel(activeScope);
+
+  useEffect(() => {
+    if (scope !== activeScope || period !== activePeriod) {
+      navigate(`/inbox/earnings/${activeScope}/${activePeriod}`, { replace: true });
+    }
+  }, [activePeriod, activeScope, navigate, period, scope]);
+
   useEffect(() => {
     const fetchOrders = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
+
       try {
-        const ordersList = await filterOrdersByDate()
-        // We need to fetch details for all orders to calculate totals correctly
-        // In a real large app, we might want to optimize this, but for now we follow the pattern
-        const ordersWithDetails = await Promise.all(
+        const ordersList = await filterOrdersByDate();
+        const hydratedOrders = await Promise.all(
           ordersList.map(async (order) => {
-            const products = await getProductsByOrder(order.id)
-            const total = products.reduce((acc, item) => {
-              const price = parseFloat(item.productData?.price) || 0
-              return acc + (item.stock * price)
-            }, 0)
-            
+            const orderTotal = getOrderTotalValue(order);
+
+            if (orderTotal > 0) {
+              return {
+                ...order,
+                totalAmount: orderTotal,
+              };
+            }
+
+            const products = await getProductsByOrder(order.id);
+            const total = products.reduce((accumulator, item) => {
+              const price = Number(item.productData?.price) || 0;
+              return accumulator + ((Number(item.stock) || 0) * price);
+            }, 0);
+
             return {
               ...order,
-              total,
-              products: products
-            }
+              totalAmount: total,
+            };
           })
-        )
-        setOrders(ordersWithDetails)
+        );
+
+        setOrders(hydratedOrders);
       } catch (error) {
-        console.error("Error fetching orders:", error)
+        console.error('Error fetching earnings detail orders:', error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false)
+    };
+
+    fetchOrders();
+  }, [filterOrdersByDate, getProductsByOrder]);
+
+  useEffect(() => {
+    setSelectedDay(null);
+    setSelectedOrder(null);
+  }, [activePeriod, activeScope]);
+
+  const scopedOrders = useMemo(() => (
+    orders.filter((order) => matchesOrderScope(order, activeScope))
+  ), [activeScope, orders]);
+
+  const filteredOrders = useMemo(() => (
+    filterOrdersByPeriod(scopedOrders, activePeriod)
+  ), [activePeriod, scopedOrders]);
+
+  const groupedOrders = useMemo(() => {
+    if (activePeriod === REPORT_PERIODS.DAILY) {
+      return [];
     }
-    
-    fetchOrders()
-  }, [filterOrdersByDate, getProductsByOrder])
 
-  // Helper: Get Date Object
-  const getOrderDate = (order) => {
-    if (order.createdAt) {
-      if (order.createdAt.toDate) return order.createdAt.toDate()
-      if (order.createdAt instanceof Date) return order.createdAt
-      return new Date(order.createdAt)
+    return groupOrdersByDay(filteredOrders);
+  }, [activePeriod, filteredOrders]);
+
+  const periodLabel = activePeriod === REPORT_PERIODS.DAILY
+    ? 'Hoy'
+    : activePeriod === REPORT_PERIODS.WEEKLY
+      ? 'Semana'
+      : 'Mes';
+
+  const handleOpenOrder = async (order) => {
+    if (order.products?.length) {
+      setSelectedOrder({
+        ...order,
+        products: normalizeProductsForDisplay(order.products),
+      });
+      return;
     }
-    if (order.fecha) {
-      const [datePart, timePart] = order.fecha.split(', ')
-      const [day, month, year] = datePart.split('/')
-      return new Date(`${year}-${month}-${day}T${timePart}`)
+
+    try {
+      setIsLoading(true);
+      const products = await getProductsByOrder(order.id);
+      setSelectedOrder({
+        ...order,
+        products: normalizeProductsForDisplay(products),
+      });
+    } catch (error) {
+      console.error('Error loading order products:', error);
+      alert('No se pudieron cargar los productos de esta venta.');
+    } finally {
+      setIsLoading(false);
     }
-    return null
-  }
+  };
 
-  // Helper: Format Currency
-  const formatCurrency = (amount) => `$${amount.toLocaleString('es-ES')}`
+  const renderPeriodSwitcher = () => (
+    <div className="earnings-period-switcher">
+      {VALID_PERIODS.map((periodOption) => (
+        <button
+          key={periodOption}
+          type="button"
+          className={`earnings-period-pill ${periodOption === activePeriod ? 'active' : ''}`}
+          onClick={() => navigate(`/inbox/earnings/${activeScope}/${periodOption}`)}
+        >
+          {periodOption === REPORT_PERIODS.DAILY ? 'Hoy' : periodOption === REPORT_PERIODS.WEEKLY ? 'Semana' : 'Mes'}
+        </button>
+      ))}
+    </div>
+  );
 
-  // Helper: Format Date
-  const formatDate = (date) => {
-    return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
-  }
+  const renderOrderDetail = () => (
+    <div className="earnings-detail-view">
+      <div className="earnings-header-row">
+        <button className="earnings-back-btn" onClick={() => setSelectedOrder(null)}>
+          ← Volver
+        </button>
+        <h2>Detalle de Venta</h2>
+      </div>
 
-  // Filter Data based on Period
-  const filteredData = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    if (period === 'daily') {
-      return orders.filter(order => {
-        const d = getOrderDate(order)
-        if (!d) return false
-        const orderDay = new Date(d)
-        orderDay.setHours(0, 0, 0, 0)
-        return orderDay.getTime() === today.getTime()
-      })
-    } else if (period === 'weekly') {
-      const weekAgo = new Date(today)
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      return orders.filter(order => {
-        const d = getOrderDate(order)
-        return d && d >= weekAgo
-      })
-    } else if (period === 'monthly') {
-      const monthAgo = new Date(today)
-      monthAgo.setDate(monthAgo.getDate() - 30)
-      return orders.filter(order => {
-        const d = getOrderDate(order)
-        return d && d >= monthAgo
-      })
-    }
-    return []
-  }, [orders, period])
-
-  // Group by Day for Weekly/Monthly
-  const groupedByDay = useMemo(() => {
-    if (period === 'daily') return null
-
-    const groups = {}
-    filteredData.forEach(order => {
-      const d = getOrderDate(order)
-      if (!d) return
-      const dayKey = d.toLocaleDateString('es-ES') // Simple key
-      if (!groups[dayKey]) {
-        groups[dayKey] = {
-          date: d,
-          orders: [],
-          total: 0
-        }
-      }
-      groups[dayKey].orders.push(order)
-      groups[dayKey].total += order.total
-    })
-
-    return Object.values(groups).sort((a, b) => b.date - a.date)
-  }, [filteredData, period])
-
-  // Render Logic
-  const renderContent = () => {
-    // 1. Detail View: Selected Order (Products)
-    if (selectedOrder) {
-      return (
-        <div className="ed-detail-view">
-          <div className="ed-header-row">
-            <button className="ed-back-btn" onClick={() => setSelectedOrder(null)}>
-              ← Volver
-            </button>
-            <h2 className="ed-title">Detalle de Venta</h2>
-          </div>
-          
-          <div className="ed-order-summary">
-            <span className="ed-order-id">ID: {selectedOrder.id.slice(0, 8)}...</span>
-            <span className="ed-order-total">{formatCurrency(selectedOrder.total)}</span>
-          </div>
-
-          <div className="ed-customer-details">
-            <h3 className="ed-section-title">Datos del Cliente</h3>
-            <div className="ed-detail-row">
-              <span className="ed-detail-label">Comprador:</span>
-              <span className="ed-detail-value">{selectedOrder.cliente || 'N/A'}</span>
-            </div>
-            <div className="ed-detail-row">
-              <span className="ed-detail-label">Domicilio:</span>
-              <span className="ed-detail-value">{selectedOrder.direccion || 'N/A'}</span>
-            </div>
-            <div className="ed-detail-row">
-              <span className="ed-detail-label">Teléfono:</span>
-              <span className="ed-detail-value">{selectedOrder.telefono || 'N/A'}</span>
-            </div>
-          </div>
-
-          <h3 className="ed-section-title" style={{marginTop: '24px', marginBottom: '12px'}}>Productos</h3>
-          <div className="ed-list">
-            {selectedOrder.products?.map((item, idx) => (
-              <div key={idx} className="ed-list-item product">
-                {item.productData?.imageUrl && (
-                  <img 
-                    src={item.productData.imageUrl} 
-                    alt={item.productData.name} 
-                    className="ed-product-image"
-                    loading="lazy"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setModalImage(item.productData.imageUrl)
-                    }}
-                  />
-                )}
-                <div className="ed-item-info">
-                  <span className="ed-item-name">{item.productData?.name || 'Producto'}</span>
-                  <span className="ed-item-sub">{item.stock} x {formatCurrency(item.productData?.price || 0)}</span>
-                </div>
-                <span className="ed-item-amount">
-                  {formatCurrency((item.stock || 0) * (item.productData?.price || 0))}
-                </span>
-              </div>
-            ))}
-          </div>
+      <div className="earnings-summary-card">
+        <div>
+          <span className="earnings-summary-label">Venta</span>
+          <strong>{selectedOrder.orderCode || selectedOrder.id}</strong>
         </div>
-      )
-    }
+        <span className={`earnings-scope-pill earnings-scope-pill--${selectedOrder.location}`}>
+          {getScopeLabel(selectedOrder.location)}
+        </span>
+      </div>
 
-    // 2. Detail View: Selected Day (Orders)
-    if (selectedDay) {
-      return (
-        <div className="ed-detail-view">
-          <div className="ed-header-row">
-            <button className="ed-back-btn" onClick={() => setSelectedDay(null)}>
-              ← Volver
-            </button>
-            <h2 className="ed-title">{formatDate(selectedDay.date)}</h2>
-          </div>
-          <div className="ed-list">
-            {selectedDay.orders.map(order => (
-              <div key={order.id} className="ed-list-item" onClick={() => setSelectedOrder(order)}>
-                <div className="ed-item-info">
-                  <span className="ed-item-name">Venta {getOrderDate(order).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}</span>
-                  <span className="ed-item-sub">{order.products?.length || 0} productos</span>
-                </div>
-                <span className="ed-item-amount">{formatCurrency(order.total)}</span>
-                <span className="ed-chevron">›</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )
-    }
+      <div className="earnings-total-banner">
+        <span>Total de la venta</span>
+        <strong>{formatCurrency(selectedOrder.totalAmount)}</strong>
+      </div>
 
-    // 3. Main View: Daily (Orders)
-    if (period === 'daily') {
-      return (
-        <div className="ed-main-view">
-          <div className="ed-header-row">
-            <button className="ed-back-btn" onClick={() => navigate('/inbox')}>
-              ← Inbox
-            </button>
-            <h2 className="ed-title">Ventas de Hoy</h2>
-          </div>
-          <div className="ed-total-banner">
-            <span className="ed-banner-label">Total del día</span>
-            <span className="ed-banner-amount">
-              {formatCurrency(filteredData.reduce((sum, o) => sum + o.total, 0))}
-            </span>
-          </div>
-          <div className="ed-list">
-            {filteredData.length > 0 ? filteredData.map(order => (
-              <div key={order.id} className="ed-list-item" onClick={() => setSelectedOrder(order)}>
-                <div className="ed-item-info">
-                  <span className="ed-item-name">Venta {getOrderDate(order).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})}</span>
-                  <span className="ed-item-sub">{order.products?.length || 0} productos</span>
-                </div>
-                <span className="ed-item-amount">{formatCurrency(order.total)}</span>
-                <span className="ed-chevron">›</span>
-              </div>
-            )) : (
-              <div className="ed-empty">No hay ventas hoy</div>
-            )}
-          </div>
+      <div className="earnings-info-card">
+        <h3>Datos del cliente</h3>
+        <div className="earnings-info-row">
+          <span>Comprador</span>
+          <strong>{selectedOrder.cliente || selectedOrder.customerName || 'N/A'}</strong>
         </div>
-      )
-    }
-
-    // 4. Main View: Weekly/Monthly (Days)
-    return (
-      <div className="ed-main-view">
-        <div className="ed-header-row">
-          <button className="ed-back-btn" onClick={() => navigate('/inbox')}>
-            ← Inbox
-          </button>
-          <h2 className="ed-title">
-            {period === 'weekly' ? 'Esta Semana' : 'Este Mes'}
-          </h2>
+        <div className="earnings-info-row">
+          <span>Domicilio</span>
+          <strong>{selectedOrder.direccion || selectedOrder.address || 'N/A'}</strong>
         </div>
-        <div className="ed-total-banner">
-          <span className="ed-banner-label">Total acumulado</span>
-          <span className="ed-banner-amount">
-            {formatCurrency(filteredData.reduce((sum, o) => sum + o.total, 0))}
-          </span>
-        </div>
-        <div className="ed-list">
-          {groupedByDay && groupedByDay.length > 0 ? groupedByDay.map(dayGroup => (
-            <div key={dayGroup.date.toISOString()} className="ed-list-item" onClick={() => setSelectedDay(dayGroup)}>
-              <div className="ed-item-info">
-                <span className="ed-item-name">{formatDate(dayGroup.date)}</span>
-                <span className="ed-item-sub">{dayGroup.orders.length} ventas</span>
-              </div>
-              <span className="ed-item-amount">{formatCurrency(dayGroup.total)}</span>
-              <span className="ed-chevron">›</span>
-            </div>
-          )) : (
-            <div className="ed-empty">No hay datos para este periodo</div>
-          )}
+        <div className="earnings-info-row">
+          <span>Tel&eacute;fono</span>
+          <strong>{selectedOrder.telefono || selectedOrder.phone || 'N/A'}</strong>
         </div>
       </div>
-    )
-  }
+
+      <div className="earnings-products-card">
+        <h3>Productos</h3>
+        <div className="earnings-products-list">
+          {selectedOrder.products?.map((item, index) => (
+            <div key={`${selectedOrder.id}-${index}`} className="earnings-product-item">
+              {item.productData?.imageUrl && (
+                <img
+                  src={item.productData.imageUrl}
+                  alt={item.productData.name}
+                  className="earnings-product-image"
+                  loading="lazy"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setModalImage(item.productData.imageUrl);
+                  }}
+                />
+              )}
+
+              <div className="earnings-product-copy">
+                <strong>{item.productData?.name || 'Producto'}</strong>
+                <span>
+                  {(Number(item.stock) || 0)} x {formatCurrency(Number(item.productData?.price) || 0)}
+                </span>
+              </div>
+
+              <span className="earnings-product-total">
+                {formatCurrency((Number(item.stock) || 0) * (Number(item.productData?.price) || 0))}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDayDetail = () => (
+    <div className="earnings-detail-view">
+      <div className="earnings-header-row">
+        <button className="earnings-back-btn" onClick={() => setSelectedDay(null)}>
+          ← Volver
+        </button>
+        <h2>{selectedDay.date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
+      </div>
+
+      {renderPeriodSwitcher()}
+
+      <div className="earnings-total-banner">
+        <span>Total del d&iacute;a</span>
+        <strong>{formatCurrency(selectedDay.total)}</strong>
+      </div>
+
+      <div className="earnings-list-card">
+        {selectedDay.orders.map((order) => (
+          <button
+            key={order.id}
+            type="button"
+            className="earnings-list-row"
+            onClick={() => handleOpenOrder(order)}
+          >
+            <div className="earnings-list-copy">
+              <strong>
+                Venta {getOrderDate(order)?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              </strong>
+              <small>{order.cliente || order.customerName || 'Cliente sin nombre'}</small>
+            </div>
+            <span>{formatCurrency(order.totalAmount)}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderMainView = () => (
+    <div className="earnings-main-view">
+      <div className="earnings-header-row">
+        <button className="earnings-back-btn" onClick={() => navigate('/inbox')}>
+          ← Inbox
+        </button>
+        <div className="earnings-header-copy">
+          <span className="earnings-header-kicker">{scopeLabel}</span>
+          <h2>Ventas {scopeLabel}</h2>
+        </div>
+      </div>
+
+      {renderPeriodSwitcher()}
+
+      <div className="earnings-total-banner">
+        <span>{periodLabel} en {scopeLabel}</span>
+        <strong>{formatCurrency(sumOrders(filteredOrders))}</strong>
+      </div>
+
+      {activePeriod === REPORT_PERIODS.DAILY ? (
+        <div className="earnings-list-card">
+          {filteredOrders.length > 0 ? filteredOrders.map((order) => (
+            <button
+              key={order.id}
+              type="button"
+              className="earnings-list-row"
+              onClick={() => handleOpenOrder(order)}
+            >
+              <div className="earnings-list-copy">
+                <strong>
+                  Venta {getOrderDate(order)?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                </strong>
+                <small>{order.cliente || order.customerName || 'Cliente sin nombre'}</small>
+              </div>
+              <span>{formatCurrency(order.totalAmount)}</span>
+            </button>
+          )) : (
+            <div className="earnings-empty">No hay ventas para esta vista todav&iacute;a.</div>
+          )}
+        </div>
+      ) : (
+        <div className="earnings-list-card">
+          {groupedOrders.length > 0 ? groupedOrders.map((day) => (
+            <button
+              key={day.date.toISOString()}
+              type="button"
+              className="earnings-list-row"
+              onClick={() => setSelectedDay(day)}
+            >
+              <div className="earnings-list-copy">
+                <strong>{day.date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</strong>
+                <small>{day.orders.length} ventas</small>
+              </div>
+              <span>{formatCurrency(day.total)}</span>
+            </button>
+          )) : (
+            <div className="earnings-empty">No hay ventas para esta vista todav&iacute;a.</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="ed-container">
+    <div className="earnings-shell">
       <LoadingComponent isLoading={isLoading} />
-      {!isLoading && renderContent()}
-      
-      <ImageModal 
+
+      <div className="earnings-content">
+        {selectedOrder && renderOrderDetail()}
+        {!selectedOrder && selectedDay && renderDayDetail()}
+        {!selectedOrder && !selectedDay && renderMainView()}
+      </div>
+
+      <ImageModal
         isOpen={!!modalImage}
         imageSrc={modalImage}
         onClose={() => setModalImage(null)}
       />
     </div>
-  )
+  );
 }
 
-export default EarningsDetails
+export default EarningsDetails;
+
+function normalizeProductsForDisplay(products = []) {
+  return products.map((item, index) => {
+    const productData = item.productData || item.productSnapshot || {};
+    const quantity = Number(item.stock ?? item.quantity ?? 0);
+
+    return {
+      ...item,
+      id: item.id || `${item.productId || 'product'}-${index}`,
+      productData,
+      stock: quantity,
+    };
+  });
+}

@@ -23,6 +23,7 @@ import {
   serverTimestamp,
   runTransaction
 } from 'firebase/firestore';
+import { normalizeOrderLocation } from '../utils/orderLocations';
 
 class SyncWorker {
   constructor() {
@@ -246,6 +247,8 @@ class SyncWorker {
 
       console.log(`📤 Syncing order to Firestore with atomic stock updates:`, order);
 
+      const orderLocation = normalizeOrderLocation(order);
+
       // FIX: Order existence check moved INSIDE the transaction (see below).
       // Previously, getDoc() was called outside the transaction, allowing two
       // concurrent calls to both see exists() === false and proceed to create
@@ -367,6 +370,8 @@ class SyncWorker {
           address: order.address,
           products: order.products,
           totalAmount: order.totalAmount,
+          location: orderLocation,
+          createdByEmail: order.createdByEmail || null,
           status: order.status,
           createdAt: serverTimestamp(),
           syncedAt: serverTimestamp(),

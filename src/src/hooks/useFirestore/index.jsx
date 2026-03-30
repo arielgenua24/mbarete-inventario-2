@@ -3,6 +3,13 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 import { db } from "../../firebaseSetUp";
+import {
+  DEFAULT_APP_CONFIG,
+  getUserLocationFromConfig,
+  normalizeAppConfig,
+  normalizeEmail,
+  normalizeOrderLocation,
+} from "../../utils/orderLocations";
 
  // Importa la configuración de Firebase
 import {
@@ -30,29 +37,42 @@ const useFirestore = () => {
   const currentDate = new Date();
   const formattedDate = format(currentDate, 'yyyy-MM-dd HH:mm:ss', { locale: es });
 
-  const getAdmin = async() => {
-    try{
-      const coleccionRef = collection(db, "users");
-      const querySnapshot = await getDocs(coleccionRef);
-      if (!querySnapshot.empty) {
-        // 3. Obtiene el primer (y único) documento de la colección
-        const document = querySnapshot.docs[0];
-  
-        // 4. Obtiene los datos del documento
-        const data = document.data();
-  
-        return data.admin; // Devuelve los datos para usarlos en tu aplicación
-      } else {
-        console.log("No se encontró ningún documento en la colección.");
-        return undefined; // O algún otro valor por defecto si la colección está vacía
-      }
-    } catch (error) {
-      console.error("Error al obtener el documento:", error);
-      throw error
-    }
-   
+  const normalizeOrderRecord = (order) => ({
+    ...order,
+    location: normalizeOrderLocation(order),
+  });
 
-  }
+  const getAppConfig = async() => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "users"));
+
+      if (querySnapshot.empty) {
+        console.warn("No se encontró configuración de usuarios. Se usarán valores por defecto.");
+        return normalizeAppConfig(DEFAULT_APP_CONFIG);
+      }
+
+      const configData = querySnapshot.docs[0].data();
+      return normalizeAppConfig(configData);
+    } catch (error) {
+      console.error("Error al obtener la configuración de usuarios:", error);
+      return normalizeAppConfig(DEFAULT_APP_CONFIG);
+    }
+  };
+
+  const getAdmin = async() => {
+    const config = await getAppConfig();
+    return config.admin;
+  };
+
+  const isAdminUser = async (email) => {
+    const config = await getAppConfig();
+    return normalizeEmail(email) === normalizeEmail(config.admin);
+  };
+
+  const getUserLocation = async (email) => {
+    const config = await getAppConfig();
+    return getUserLocationFromConfig(email, config);
+  };
 
   //OKAY, producto agregado
   const addProduct = async (name, price, details, stock, imageUrl = null, sizes = [], category = '') => {
@@ -204,7 +224,7 @@ const useFirestore = () => {
     const getOrders = async () => {
       try {
         const ordersSnapshot = await getDocs(collection(db, "orders"));
-        const orders = ordersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const orders = ordersSnapshot.docs.map((doc) => normalizeOrderRecord({ id: doc.id, ...doc.data() }));
         return orders;
       } catch (error) {
         console.error("Error al obtener orders:", error);
@@ -225,10 +245,10 @@ const useFirestore = () => {
         }
 
         const ordersSnapshot = await getDocs(q);
-        const ordersData = ordersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const ordersData = ordersSnapshot.docs.map((doc) => normalizeOrderRecord({ id: doc.id, ...doc.data() }));
         const lastVisibleDoc = ordersSnapshot.docs[ordersSnapshot.docs.length - 1];
 
-        return { orders: ordersData, lastVisibleDoc };
+        return { orders: ordersData, lastVisibleDoc, docs: ordersSnapshot.docs };
       } catch (error) {
         console.error("Error al obtener orders paginados:", error);
         throw error;
@@ -505,7 +525,7 @@ const useFirestore = () => {
         const orderSnapshot = await getDoc(orderDocRef);
         
         if (orderSnapshot.exists()) {
-          return { id: orderSnapshot.id, ...orderSnapshot.data() };
+          return normalizeOrderRecord({ id: orderSnapshot.id, ...orderSnapshot.data() });
         } else {
           console.error("No such order exists");
           return null;
@@ -855,7 +875,11 @@ const useFirestore = () => {
     updateOrder,
     deleteOrder,
     getProductsByOrder,
-    user, setUser, getAdmin,
+    getAppConfig,
+    getAdmin,
+    isAdminUser,
+    getUserLocation,
+    user, setUser,
     searchProductsByNameOrCode
   };
 };

@@ -7,7 +7,7 @@ import useFirestoreContext from '../useFirestoreContext';
  * @returns {Object} - { isAdmin: boolean, isLoading: boolean }
  */
 const useIsAdmin = () => {
-  const { user, getAdmin } = useFirestoreContext();
+  const { user, isAdminUser } = useFirestoreContext();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,10 +15,8 @@ const useIsAdmin = () => {
     const checkAdmin = async () => {
       setIsLoading(true);
       try {
-        const adminEmail = await getAdmin();
-
-        // Compare current user email with admin email
-        setIsAdmin(user === adminEmail);
+        const result = await isAdminUser(user);
+        setIsAdmin(result);
       } catch (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
@@ -33,7 +31,7 @@ const useIsAdmin = () => {
       setIsAdmin(false);
       setIsLoading(false);
     }
-  }, [user, getAdmin]);
+  }, [isAdminUser, user]);
 
   return { isAdmin, isLoading };
 };

@@ -1,4 +1,4 @@
-import { HashRouter, useRoutes } from 'react-router-dom';
+import { HashRouter, Navigate, useParams, useRoutes } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -53,7 +53,8 @@ function AppRouter() {
     { path: '/qrsearch', element: <QrSearchHandler /> },
     { path: '/succeeded-order/:id', element: <SuccededOrder /> },
     { path: '/inbox', element: <Inbox /> },
-    { path: '/inbox/earnings/:period', element: <EarningsDetails /> },
+    { path: '/inbox/earnings/:scope/:period', element: <EarningsDetails /> },
+    { path: '/inbox/earnings/:period', element: <LegacyEarningsRedirect /> },
     { path: '/login', element: <Login /> },
     { path: '/migration-runner', element: <MigrationRunner /> },
     { path: '/sync-debug', element: <SyncDebug /> },
@@ -63,6 +64,11 @@ function AppRouter() {
     { path: '/mi-compra/:orderId', element: <MiCompra /> },
   ]);
   return router;
+}
+
+function LegacyEarningsRedirect() {
+  const { period } = useParams();
+  return <Navigate replace to={`/inbox/earnings/total/${period}`} />;
 }
 
 export default function App() {

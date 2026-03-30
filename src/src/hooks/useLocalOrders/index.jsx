@@ -15,10 +15,13 @@ import {
   reserveStock
 } from '../../services/cacheService';
 import syncEvents from '../../services/syncEvents';
+import useFirestoreContext from '../useFirestoreContext';
+import { normalizeOrderLocation } from '../../utils/orderLocations';
 
 const useLocalOrders = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(null);
+  const { user, getUserLocation } = useFirestoreContext();
 
   /**
    * Generate unique order ID
@@ -107,6 +110,16 @@ const useLocalOrders = () => {
     try {
       console.log('🚀 Creating optimistic order...');
 
+      if (!user) {
+        throw new Error('No hay un usuario autenticado para registrar esta venta.');
+      }
+
+      const location = await getUserLocation(user);
+
+      if (!location) {
+        throw new Error('Tu usuario no tiene una sede asignada. Configúralo antes de crear pedidos.');
+      }
+
       // Step 1: Validate stock (local check)
       const stockValidation = await validateStock(products);
       if (!stockValidation.valid) {
@@ -160,6 +173,8 @@ const useLocalOrders = () => {
         address: orderData.address,
         products: orderProducts,
         totalAmount,
+        location,
+        createdByEmail: user,
         status: 'pending',
         createdAt: now,
         syncStatus: 'pending', // pending, syncing, synced, failed
@@ -216,7 +231,7 @@ const useLocalOrders = () => {
     } finally {
       setIsCreating(false);
     }
-  }, [validateStock]);
+  }, [getUserLocation, user, validateStock]);
 
   /**
    * Get all pending orders from IndexedDB
@@ -226,7 +241,10 @@ const useLocalOrders = () => {
   const getPendingOrders = useCallback(async () => {
     try {
       const orders = await getPendingOrdersFromDB();
-      return orders;
+      return orders.map(order => ({
+        ...order,
+        location: normalizeOrderLocation(order),
+      }));
     } catch (err) {
       console.error('❌ Error getting pending orders:', err);
       return [];
@@ -243,7 +261,12 @@ const useLocalOrders = () => {
     try {
       const orders = await getPendingOrdersFromDB();
       const order = orders.find(o => o.orderId === orderId);
-      return order || null;
+      return order
+        ? {
+            ...order,
+            location: normalizeOrderLocation(order),
+          }
+        : null;
     } catch (err) {
       console.error('❌ Error getting order:', err);
       return null;
