@@ -66,7 +66,7 @@ function Home() {
                 </h2>
 
 
-        {admin && admin === user && ( <Link to="/inbox" className="home-link">
+        {user && ( <Link to="/inbox" className="home-link">
                 <button className="home-btn inbox">
                     <Inbox size={24} className="home-icon" />
                     Dinero y notificaciones

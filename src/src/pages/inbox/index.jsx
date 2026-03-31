@@ -1,15 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useFirestoreContext from '../../hooks/useFirestoreContext';
+import useIsAdmin from '../../hooks/useIsAdmin';
 import LoadingComponent from '../../components/Loading';
 import {
   getScopeLabel,
-  getOrderTotalValue,
   matchesOrderScope,
   ORDER_SCOPES,
 } from '../../utils/orderLocations';
 import {
-  filterOrdersByPeriod,
   formatCurrency,
   REPORT_PERIODS,
   sumOrders,
@@ -17,88 +16,77 @@ import {
 import './styles.css';
 
 const PERIOD_OPTIONS = [
-  { id: REPORT_PERIODS.DAILY, label: 'Hoy' },
-  { id: REPORT_PERIODS.WEEKLY, label: 'Semana' },
+  { id: REPORT_PERIODS.DAILY,   label: 'Hoy' },
+  { id: REPORT_PERIODS.WEEKLY,  label: 'Semana' },
   { id: REPORT_PERIODS.MONTHLY, label: 'Mes' },
 ];
 
-const CARD_SCOPES = [
+const ADMIN_CARD_SCOPES = [
   ORDER_SCOPES.LOCAL_AVELLANEDA,
   ORDER_SCOPES.CENTRAL,
   ORDER_SCOPES.TOTAL,
 ];
 
 function Inbox() {
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { filterOrdersByDate, getProductsByOrder } = useFirestoreContext();
+  const { getOrdersForInboxPeriod, getUserLocation, user } = useFirestoreContext();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
 
+  const [selectedPeriod, setSelectedPeriod] = useState(REPORT_PERIODS.DAILY);
+  const [periodCache, setPeriodCache] = useState({
+    [REPORT_PERIODS.DAILY]:   null,
+    [REPORT_PERIODS.WEEKLY]:  null,
+    [REPORT_PERIODS.MONTHLY]: null,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [employeeScope, setEmployeeScope] = useState(null);
+
+  // Resolve the employee's assigned location once we know they're not admin.
   useEffect(() => {
-    const fetchOrders = async () => {
-      setIsLoading(true);
+    if (isAdmin === false && user) {
+      getUserLocation(user).then(setEmployeeScope);
+    }
+  }, [isAdmin, user, getUserLocation]);
 
-      try {
-        const ordersList = await filterOrdersByDate();
-        const hydratedOrders = await Promise.all(
-          ordersList.map(async (order) => {
-            const orderTotal = getOrderTotalValue(order);
+  // Admin sees all 3 scopes and all period tabs.
+  // Employee sees only their assigned location, locked to daily.
+  const cardScopes = isAdmin ? ADMIN_CARD_SCOPES : (employeeScope ? [employeeScope] : []);
+  const activePeriod = isAdmin ? selectedPeriod : REPORT_PERIODS.DAILY;
 
-            if (orderTotal > 0) {
-              return {
-                ...order,
-                totalAmount: orderTotal,
-              };
-            }
+  const fetchPeriod = useCallback(async (period) => {
+    setIsLoading(true);
+    try {
+      const orders = await getOrdersForInboxPeriod(period);
+      setPeriodCache((prev) => ({ ...prev, [period]: orders }));
+    } catch (error) {
+      console.error('Error fetching inbox period:', error);
+      setPeriodCache((prev) => ({ ...prev, [period]: [] }));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getOrdersForInboxPeriod]);
 
-            const products = await getProductsByOrder(order.id);
-            const total = products.reduce((accumulator, item) => {
-              const price = Number(item.productData?.price) || 0;
-              return accumulator + ((Number(item.stock) || 0) * price);
-            }, 0);
+  useEffect(() => {
+    if (periodCache[activePeriod] === null) {
+      fetchPeriod(activePeriod);
+    }
+  }, [activePeriod, periodCache, fetchPeriod]);
 
-            return {
-              ...order,
-              totalAmount: total,
-            };
-          })
-        );
-
-        setOrders(hydratedOrders);
-      } catch (error) {
-        console.error('Error fetching orders for inbox:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchOrders();
-  }, [filterOrdersByDate, getProductsByOrder]);
+  const activeOrders = periodCache[activePeriod] ?? [];
 
   const scopeCards = useMemo(() => {
-    return CARD_SCOPES.map((scope) => {
-      const scopedOrders = orders.filter((order) => matchesOrderScope(order, scope));
-
+    return cardScopes.map((scope) => {
+      const scopedOrders = activeOrders.filter((o) => matchesOrderScope(o, scope));
       return {
         scope,
-        label: scope === ORDER_SCOPES.TOTAL ? 'Ventas Total' : `Ventas ${getScopeLabel(scope)}`,
-        summary: PERIOD_OPTIONS.map((periodOption) => {
-          const periodOrders = filterOrdersByPeriod(scopedOrders, periodOption.id);
-          return {
-            ...periodOption,
-            total: sumOrders(periodOrders),
-            count: periodOrders.length,
-          };
-        }),
+        label: scope === ORDER_SCOPES.TOTAL
+          ? 'Ventas Total'
+          : `Ventas ${getScopeLabel(scope)}`,
+        total: sumOrders(scopedOrders),
+        count: scopedOrders.length,
       };
     });
-  }, [orders]);
-
-  const totalMonthAmount = useMemo(() => {
-    const monthlyOrders = filterOrdersByPeriod(orders, REPORT_PERIODS.MONTHLY);
-    return sumOrders(monthlyOrders);
-  }, [orders]);
+  }, [cardScopes, activeOrders]);
 
   return (
     <div className="inbox-shell">
@@ -111,12 +99,24 @@ function Inbox() {
             <h1>Ingresos divididos por sede</h1>
             <p>Segu&iacute; cada casa por separado y abr&iacute; el desglose del d&iacute;a, la semana o el mes con un toque.</p>
           </div>
-
-          <div className="inbox-hero-total">
-            <span className="inbox-hero-label">Total &uacute;ltimos 30 d&iacute;as</span>
-            <strong>{formatCurrency(totalMonthAmount)}</strong>
-          </div>
         </header>
+
+        {isAdmin && (
+          <div className="inbox-period-tabs" role="tablist" aria-label="Período">
+            {PERIOD_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedPeriod === opt.id}
+                className={`inbox-period-tab${selectedPeriod === opt.id ? ' inbox-period-tab--active' : ''}`}
+                onClick={() => setSelectedPeriod(opt.id)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <section className="scope-card-grid">
           {scopeCards.map((card) => (
@@ -130,20 +130,21 @@ function Inbox() {
               </div>
 
               <div className="scope-card-body">
-                {card.summary.map((period) => (
-                  <button
-                    key={`${card.scope}-${period.id}`}
-                    type="button"
-                    className="scope-period-row"
-                    onClick={() => navigate(`/inbox/earnings/${card.scope}/${period.id}`)}
-                  >
-                    <span className="scope-period-copy">
-                      <strong>{period.label}</strong>
-                      <small>{period.count} ventas</small>
-                    </span>
-                    <span className="scope-period-amount">{formatCurrency(period.total)}</span>
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  className="scope-period-row"
+                  onClick={() => navigate(`/inbox/earnings/${card.scope}/${activePeriod}`)}
+                >
+                  <span className="scope-period-copy">
+                    <strong>{PERIOD_OPTIONS.find((o) => o.id === activePeriod)?.label}</strong>
+                    <small>
+                      {isLoading && periodCache[activePeriod] === null
+                        ? 'Cargando\u2026'
+                        : `${card.count} ventas`}
+                    </small>
+                  </span>
+                  <span className="scope-period-amount">{formatCurrency(card.total)}</span>
+                </button>
               </div>
             </article>
           ))}

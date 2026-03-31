@@ -123,10 +123,15 @@ const OrderCard = ({ product, quantity, selectedVariants, onImageClick }) => {
               <span className="cart-info-value">{selectedVariants.color}</span>
             </div>
           )}
-          {selectedVariants?.size && (
+          {selectedVariants?.size ? (
             <div className="cart-info-item">
               <span className="cart-info-label">Talle</span>
               <span className="cart-info-value">{selectedVariants.size}</span>
+            </div>
+          ) : product.sizes && product.sizes.length > 0 && (
+            <div className="cart-info-item">
+              <span className="cart-info-label">Talles</span>
+              <span className="cart-info-value">{product.sizes.join(', ')}</span>
             </div>
           )}
           <div className="cart-info-item">

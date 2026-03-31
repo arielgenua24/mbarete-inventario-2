@@ -301,6 +301,9 @@ const Inventory = () => {
               <p className="productDetail">Precio: ${product.price}</p>
               <p className="productDetail">Stock: {product.stock}</p>
               <p className="productDetail">{product.details || 'Sin detalles'}</p>
+              {product.sizes && product.sizes.length > 0 && (
+                <p className="productDetail">Talles: {product.sizes.join(', ')}</p>
+              )}
 
 
               <QRButton

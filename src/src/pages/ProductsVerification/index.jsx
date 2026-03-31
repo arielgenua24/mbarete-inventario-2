@@ -166,9 +166,13 @@ const ProductVerification = () => {
                       <strong>Color:</strong> {product.selectedVariants.color}
                     </p>
                   )}
-                  {product.selectedVariants?.size && (
+                  {product.selectedVariants?.size ? (
                     <p>
                       <strong>Talle:</strong> {product.selectedVariants.size}
+                    </p>
+                  ) : product.productData?.sizes?.length > 0 && (
+                    <p>
+                      <strong>Talles disponibles:</strong> {product.productData.sizes.join(', ')}
                     </p>
                   )}
                   <p>
@@ -213,9 +217,13 @@ const ProductVerification = () => {
                     <strong>Color:</strong> {product.selectedVariants.color}
                   </p>
                 )}
-                {product.selectedVariants?.size && (
+                {product.selectedVariants?.size ? (
                   <p>
                     <strong>Talle:</strong> {product.selectedVariants.size}
+                  </p>
+                ) : product.productSnapshot?.sizes?.length > 0 && (
+                  <p>
+                    <strong>Talles disponibles:</strong> {product.productSnapshot.sizes.join(', ')}
                   </p>
                 )}
                 <p>

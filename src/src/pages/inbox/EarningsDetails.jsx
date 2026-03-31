@@ -209,7 +209,16 @@ function EarningsDetails() {
               )}
 
               <div className="earnings-product-copy">
-                <strong>{item.productData?.name || 'Producto'}</strong>
+                <strong>{item.productData?.name || item.productData?.productCode || 'Producto'}</strong>
+                {(item.selectedVariants?.size || item.selectedVariants?.color) ? (
+                  <span className="earnings-product-variant">
+                    {[item.selectedVariants.size, item.selectedVariants.color].filter(Boolean).join(' · ')}
+                  </span>
+                ) : item.productData?.sizes?.length > 0 && (
+                  <span className="earnings-product-variant">
+                    Talles: {item.productData.sizes.join(', ')}
+                  </span>
+                )}
                 <span>
                   {(Number(item.stock) || 0)} x {formatCurrency(Number(item.productData?.price) || 0)}
                 </span>

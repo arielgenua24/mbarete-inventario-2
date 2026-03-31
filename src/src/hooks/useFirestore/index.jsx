@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { db } from "../../firebaseSetUp";
 import {
   DEFAULT_APP_CONFIG,
+  getOrderTotalValue,
   getUserLocationFromConfig,
   normalizeAppConfig,
   normalizeEmail,
@@ -28,6 +29,7 @@ import {
   startAfter,
   where,
   serverTimestamp,
+  Timestamp,
   writeBatch,
   runTransaction
 } from "firebase/firestore";
@@ -300,6 +302,34 @@ const useFirestore = () => {
       console.log('Filtered orders:', filteredOrders);
       return filteredOrders;
     }
+
+  const getOrdersForInboxPeriod = async (period) => {
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setHours(0, 0, 0, 0);
+
+    if (period === 'weekly') {
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (period === 'monthly') {
+      startDate.setDate(startDate.getDate() - 30);
+    }
+
+    try {
+      const q = query(
+        collection(db, 'orders'),
+        where('createdAt', '>=', Timestamp.fromDate(startDate)),
+        orderBy('createdAt', 'desc'),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((docSnap) => {
+        const order = normalizeOrderRecord({ id: docSnap.id, ...docSnap.data() });
+        return { ...order, totalAmount: getOrderTotalValue(order) || 0 };
+      });
+    } catch (error) {
+      console.error('Error fetching orders for inbox period:', error);
+      throw error;
+    }
+  };
 
     /**
      * Delete an order and restore stock to products.
@@ -702,6 +732,7 @@ const useFirestore = () => {
                     price: productData.price,
                     productCode: productData.productCode,
                     details: productData.details || '',
+                    sizes: productData.sizes || [],
                 },
                 stock: quantityNumber,
                 verified: 0
@@ -872,6 +903,7 @@ const useFirestore = () => {
     updateProduct,
     getOrderById,
     filterOrdersByDate,
+    getOrdersForInboxPeriod,
     updateOrder,
     deleteOrder,
     getProductsByOrder,

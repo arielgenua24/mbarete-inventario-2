@@ -150,7 +150,8 @@ const useLocalOrders = () => {
             price: product.price,
             productCode: product.productCode,
             imageUrl: product.imageUrl || null,
-            category: product.category || null
+            category: product.category || null,
+            sizes: product.sizes || []
           },
           quantity: quantitySold,
           selectedVariants: {

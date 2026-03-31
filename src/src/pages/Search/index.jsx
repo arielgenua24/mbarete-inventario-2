@@ -390,11 +390,11 @@ function SearchPage() {
 
                                 {/* Product Info */}
                                 <div className="product-item-info">
-                                    <h3 className="product-item-name">{product.name}</h3>
+                                    <h3 className="product-item-name">{product.name || product.productCode || 'Sin nombre'}</h3>
                                     <p className="product-item-details">
-                                        {product.productCode && <span>#{product.productCode}</span>}
+                                        {product.productCode && <span>{product.productCode}</span>}
                                         {product.color && <span> · {product.color}</span>}
-                                        {product.size && <span> · Talle {product.size}</span>}
+                                        {product.sizes && product.sizes.length > 0 && <span> · Talles: {product.sizes.join(', ')}</span>}
                                     </p>
                                     <div className="product-item-meta">
                                         <span className="product-item-price">{formatPrice(product.price)}</span>

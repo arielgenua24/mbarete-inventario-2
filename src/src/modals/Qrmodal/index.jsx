@@ -137,7 +137,7 @@ function QRmodal({ QRcode, setQRcode, orderCode }) {
       pdf.setFont('helvetica', 'italic');
       pdf.setTextColor(216, 27, 96); // Rosa chic
       pdf.text(
-        "Gracias por comprar en Reina Chura Confecciones",
+        "Gracias por comprar en Mbarete",
         pdf.internal.pageSize.width / 2,
         yPos + 25,
         { align: 'center' }

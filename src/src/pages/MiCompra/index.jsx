@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../../firebaseSetUp';
 import ImageModal from '../../components/ImageModal';
 import './styles.css';
@@ -25,13 +25,28 @@ function MiCompra() {
 
         if (orderSnap.exists()) {
           const data = orderSnap.data();
+
+          // Products may be embedded in the order doc (new format) or in a subcollection (old format)
+          let products = data.products || [];
+          if (products.length === 0) {
+            const productsSnap = await getDocs(collection(db, 'orders', orderId, 'products'));
+            products = productsSnap.docs.map(d => {
+              const pData = d.data();
+              return {
+                productSnapshot: pData.productSnapshot,
+                selectedVariants: pData.selectedVariants,
+                quantity: pData.stock, // subcollection uses 'stock' for quantity ordered
+              };
+            });
+          }
+
           // Solo exponer datos que el cliente debe ver
           setOrder({
             orderCode: data.orderCode || orderId.slice(-8).toUpperCase(),
             customerName: data.customerName || data.cliente,
             fecha: data.fecha || formatDate(data.createdAt),
-            products: data.products || [],
-            totalAmount: data.totalAmount || calculateTotal(data.products),
+            products,
+            totalAmount: data.totalAmount || calculateTotal(products),
             status: data.status || data.estado || 'pendiente'
           });
         } else {

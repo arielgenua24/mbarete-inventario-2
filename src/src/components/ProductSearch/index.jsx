@@ -209,13 +209,13 @@ function ProductSearch({ setQRcode, isCartEnabled }) {
                       {/* Product Details */}
                       <div className="product-info-content">
                         <div className="product-info">
-                          <h3 className="product-name">{product.name}</h3>
+                          <h3 className="product-name">{product.name || product.productCode || 'Sin nombre'}</h3>
                         </div>
 
                         <div className="search-product-details">
                           {product.color && <span>Color: {product.color}</span>}
-                          {product.size && <span>Talle: {product.size}</span>}
-                          <span>#{product.productCode}</span>
+                          {product.sizes && product.sizes.length > 0 && <span>Talles: {product.sizes.join(', ')}</span>}
+                          <span>{product.productCode}</span>
                         </div>
 
                         <span className="product-price">{formatPrice(product.price)}</span>

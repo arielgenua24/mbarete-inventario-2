@@ -58,7 +58,7 @@ function ClientShareActions({ order, variant = 'full' }) {
       const formattedPhone = formatArgentinePhone(phoneNumber);
       const publicUrl = getPublicUrl();
       const message = encodeURIComponent(
-        `¡Hola! Aquí está el detalle de tu compra en Reina Chura:\n\n` +
+        `¡Hola! Aquí está el detalle de tu compra en Mbarete:\n\n` +
         `Código: ${orderCode}\n` +
         `Ver compra: ${publicUrl}\n\n` +
         `¡Gracias por tu compra!`
