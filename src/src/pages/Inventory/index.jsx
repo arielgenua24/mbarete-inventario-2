@@ -28,6 +28,8 @@ const Inventory = () => {
     details: '',
     stock: '',
     imageUrl: null,
+    image2: null,
+    image3: null,
     sizes: '',
     category: ''
   });
@@ -105,10 +107,12 @@ const Inventory = () => {
         newProduct.stock,
         newProduct.imageUrl || null,
         newProduct.sizes || '',
-        newProduct.category || ''
+        newProduct.category || '',
+        newProduct.image2 || null,
+        newProduct.image3 || null
       );
       setIsModalOpen(false);
-      setNewProduct({ name: '', price: '', details: '', stock: '', imageUrl: null, sizes: '', category: '' });
+      setNewProduct({ name: '', price: '', details: '', stock: '', imageUrl: null, image2: null, image3: null, sizes: '', category: '' });
       await loadInitialProducts();
     } catch (error) {
       console.error("Error al agregar producto:", error);
@@ -280,19 +284,24 @@ const Inventory = () => {
                 </button>
               </div>
 
-              {/* Product Image */}
-              {product.imageUrl && (
-                <div
-                  className="productImageContainer"
-                  onClick={() => setSelectedImage(product.imageUrl)}
-                  style={{ cursor: 'zoom-in' }}
-                >
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="productImage"
-                    loading="lazy"
-                  />
+              {/* Product Images */}
+              {(product.imageUrl || product.image2 || product.image3) && (
+                <div className="productImagesRow">
+                  {[product.imageUrl, product.image2, product.image3].filter(Boolean).map((url, i) => (
+                    <div
+                      key={i}
+                      className="productImageContainer"
+                      onClick={() => setSelectedImage(url)}
+                      style={{ cursor: 'zoom-in' }}
+                    >
+                      <img
+                        src={url}
+                        alt={`${product.name} ${i + 1}`}
+                        className="productImage"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 

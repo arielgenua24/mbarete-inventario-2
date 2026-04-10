@@ -24,6 +24,8 @@ function Product() {
   const [stock, setStock] = useState(product.stock);
   const [details, setDetails] = useState(product.details);
   const [imageUrl, setImageUrl] = useState(product.imageUrl);
+  const [image2, setImage2] = useState(product.image2);
+  const [image3, setImage3] = useState(product.image3);
   // Talles como string editable "38,40,42" para facilitar edición
   const [sizesInput, setSizesInput] = useState('');
   const [category, setCategory] = useState('');
@@ -46,6 +48,8 @@ function Product() {
       setStock(fetchedProduct.stock);
       setDetails(fetchedProduct.details || '');
       setImageUrl(fetchedProduct.imageUrl || null);
+      setImage2(fetchedProduct.image2 || null);
+      setImage3(fetchedProduct.image3 || null);
       // Convertir array de talles a string para edición
       const existingSizes = Array.isArray(fetchedProduct.sizes)
         ? fetchedProduct.sizes.join(',')
@@ -85,6 +89,8 @@ function Product() {
       details,
       updatedAt: formattedDate,
       imageUrl: imageUrl || null,
+      image2: image2 || null,
+      image3: image3 || null,
       sizes: parsedSizes,
       category: category || '',
     };
@@ -164,6 +170,29 @@ function Product() {
                   setChanges(true);
                 }}
                 existingImageUrl={imageUrl}
+                label="Imagen 1"
+              />
+            </div>
+
+            <div className="product-editor-field product-editor-field-full">
+              <ImageUpload
+                onImageUploaded={(url) => {
+                  setImage2(url);
+                  setChanges(true);
+                }}
+                existingImageUrl={image2}
+                label="Imagen 2"
+              />
+            </div>
+
+            <div className="product-editor-field product-editor-field-full">
+              <ImageUpload
+                onImageUploaded={(url) => {
+                  setImage3(url);
+                  setChanges(true);
+                }}
+                existingImageUrl={image3}
+                label="Imagen 3"
               />
             </div>
 

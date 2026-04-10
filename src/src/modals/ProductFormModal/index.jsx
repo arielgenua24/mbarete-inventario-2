@@ -13,6 +13,8 @@ function ProductFormModal({ handleSubmit, newProduct, setNewProduct, setIsModalO
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [imageUrl, setImageUrl] = useState(null);
+  const [image2, setImage2] = useState(null);
+  const [image3, setImage3] = useState(null);
 
   const { getAllProducts } = useFirestoreContext();
   const { isAdmin } = useIsAdmin();
@@ -44,22 +46,33 @@ function ProductFormModal({ handleSubmit, newProduct, setNewProduct, setIsModalO
   };
 
   const handleSuggestionClick = (suggestion) => {
-    setNewProduct({
+    const updated = {
       ...newProduct,
       name: suggestion.name,
       price: suggestion.price,
       details: suggestion.details || '',
-    });
-    if (suggestion.imageUrl) {
-      setImageUrl(suggestion.imageUrl);
-    }
+    };
+    if (suggestion.imageUrl) { setImageUrl(suggestion.imageUrl); updated.imageUrl = suggestion.imageUrl; }
+    if (suggestion.image2)   { setImage2(suggestion.image2);   updated.image2   = suggestion.image2; }
+    if (suggestion.image3)   { setImage3(suggestion.image3);   updated.image3   = suggestion.image3; }
+    setNewProduct(updated);
     setSuggestions([]);
     showSuggestionNotification();
   };
 
   const handleImageUploaded = (url) => {
     setImageUrl(url);
-    setNewProduct({ ...newProduct, imageUrl: url });
+    setNewProduct((prev) => ({ ...prev, imageUrl: url }));
+  };
+
+  const handleImage2Uploaded = (url) => {
+    setImage2(url);
+    setNewProduct((prev) => ({ ...prev, image2: url }));
+  };
+
+  const handleImage3Uploaded = (url) => {
+    setImage3(url);
+    setNewProduct((prev) => ({ ...prev, image3: url }));
   };
 
   // Close on backdrop click
@@ -129,10 +142,21 @@ function ProductFormModal({ handleSubmit, newProduct, setNewProduct, setIsModalO
               )}
             </div>
 
-            {/* ── Image upload ── */}
+            {/* ── Image uploads ── */}
             <ImageUpload
               onImageUploaded={handleImageUploaded}
               existingImageUrl={imageUrl}
+              label="Imagen 1"
+            />
+            <ImageUpload
+              onImageUploaded={handleImage2Uploaded}
+              existingImageUrl={image2}
+              label="Imagen 2"
+            />
+            <ImageUpload
+              onImageUploaded={handleImage3Uploaded}
+              existingImageUrl={image3}
+              label="Imagen 3"
             />
 
             {/* ── Precio + Stock (same row) ── */}

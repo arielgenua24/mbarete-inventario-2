@@ -6,7 +6,7 @@ import './styles.css';
  * WhatsApp-style Image Upload Component
  * Simple, familiar UX for uploading a single product image
  */
-function ImageUpload({ onImageUploaded, existingImageUrl = null }) {
+function ImageUpload({ onImageUploaded, existingImageUrl = null, label = 'Imagen del producto' }) {
   const [preview, setPreview] = useState(existingImageUrl);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -126,7 +126,7 @@ function ImageUpload({ onImageUploaded, existingImageUrl = null }) {
 
   return (
     <div className="image-upload-container">
-      <label className="image-upload-label">Imagen del producto</label>
+      <label className="image-upload-label">{label}</label>
 
       {/* Upload area - WhatsApp style */}
       {!preview ? (

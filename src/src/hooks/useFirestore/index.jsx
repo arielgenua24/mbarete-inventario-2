@@ -77,7 +77,7 @@ const useFirestore = () => {
   };
 
   //OKAY, producto agregado
-  const addProduct = async (name, price, details, stock, imageUrl = null, sizes = [], category = '') => {
+  const addProduct = async (name, price, details, stock, imageUrl = null, sizes = [], category = '', image2 = null, image3 = null) => {
     try {
         //obtenemos el codigo de el producto
     const productCode = await incrementProductCode();
@@ -108,10 +108,10 @@ const useFirestore = () => {
         createdAt: formattedDate, // Keep formatted date for display purposes
       };
 
-      // Add imageUrl only if it exists
-      if (imageUrl) {
-        productData.imageUrl = imageUrl;
-      }
+      // Add image fields only if they exist
+      if (imageUrl) productData.imageUrl = imageUrl;
+      if (image2)   productData.image2   = image2;
+      if (image3)   productData.image3   = image3;
 
       const docRef = await addDoc(collection(db, "products"), productData);
       console.log("Producto agregado con ID: ", docRef.id);
@@ -183,17 +183,23 @@ const useFirestore = () => {
       updatedAt: serverTimestamp(),
     });
 
-    // Propagate imageUrl to siblings with the same name that have no image
-    if (values.imageUrl && values.name) {
+    // Propagate image fields (including deletions) to siblings with the same name.
+    // We check `field in values` instead of `values[field] != null` so that
+    // explicitly setting a field to null (deletion) also bubbles to siblings.
+    const imageFields = ['imageUrl', 'image2', 'image3'];
+    const changedImageFields = imageFields.filter(f => f in values);
+
+    if (changedImageFields.length > 0 && values.name) {
       const siblingsSnap = await getDocs(
         query(collection(db, 'products'), where('name', '==', values.name))
       );
       siblingsSnap.forEach((sibDoc) => {
         if (sibDoc.id !== productId) {
-          batch.update(sibDoc.ref, {
-            imageUrl: values.imageUrl,
-            updatedAt: serverTimestamp(),
-          });
+          const sibUpdate = { updatedAt: serverTimestamp() };
+          for (const field of changedImageFields) {
+            sibUpdate[field] = values[field]; // propagates null (deletion) too
+          }
+          batch.update(sibDoc.ref, sibUpdate);
         }
       });
     }
