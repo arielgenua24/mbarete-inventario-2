@@ -25,6 +25,7 @@ const Inventory = () => {
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
+    meliPrice: '',
     details: '',
     stock: '',
     imageUrl: null,
@@ -109,10 +110,11 @@ const Inventory = () => {
         newProduct.sizes || '',
         newProduct.category || '',
         newProduct.image2 || null,
-        newProduct.image3 || null
+        newProduct.image3 || null,
+        newProduct.meliPrice || null
       );
       setIsModalOpen(false);
-      setNewProduct({ name: '', price: '', details: '', stock: '', imageUrl: null, image2: null, image3: null, sizes: '', category: '' });
+      setNewProduct({ name: '', price: '', meliPrice: '', details: '', stock: '', imageUrl: null, image2: null, image3: null, sizes: '', category: '' });
       await loadInitialProducts();
     } catch (error) {
       console.error("Error al agregar producto:", error);
@@ -308,6 +310,12 @@ const Inventory = () => {
               <h3 className="productTitle">{product.name}</h3>
               <p className="productDetail">{product.productCode}</p>
               <p className="productDetail">Precio: ${product.price}</p>
+              {product.meliPrice != null && (
+                <p className="productDetail" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                  <span style={{ background: '#FFE600', color: '#333', fontSize: '9px', fontWeight: '800', padding: '1px 5px', borderRadius: '3px' }}>meli</span>
+                  ${product.meliPrice}
+                </p>
+              )}
               <p className="productDetail">Stock: {product.stock}</p>
               <p className="productDetail">{product.details || 'Sin detalles'}</p>
               {product.sizes && product.sizes.length > 0 && (
@@ -329,7 +337,16 @@ const Inventory = () => {
 
         {isLoading && products.length > 0 && <LoadingComponent isLoading={true} />}
         {!isLoading && hasMore && (
-          <button onClick={loadMoreProducts} className="loadMoreButton">
+          <button onClick={loadMoreProducts} className="loadMoreButton" style={{
+            backgroundColor: "#f1f1f1",
+            borderRadius: "20px",
+            border: "#000 1px solid",
+            margin: "20px auto",
+            display: "block",
+            padding: "10px 20px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}>
             Cargar más productos
           </button>
         )}

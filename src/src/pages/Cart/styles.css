@@ -351,3 +351,25 @@
         width: 300px;
     }
 }
+/* Meli badge in cart */
+.cart-meli-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFE600;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1A1A2E;
+  margin-top: 8px;
+}
+
+.cart-meli-logo {
+  background: #2D3277;
+  color: #FFE600;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+}

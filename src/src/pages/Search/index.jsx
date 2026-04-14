@@ -33,7 +33,7 @@ function SearchPage() {
 
     const navigate = useNavigate();
     const { searchProductsByNameOrCode, getProductsPaginated } = useProducts();
-    const { addItem, cart, updateQuantity, findItem } = useOrder();
+    const { addItem, cart, updateQuantity, findItem, isMeli } = useOrder();
 
     // Focus input on mount
     useEffect(() => {
@@ -397,7 +397,16 @@ function SearchPage() {
                                         {product.sizes && product.sizes.length > 0 && <span> · Talles: {product.sizes.join(', ')}</span>}
                                     </p>
                                     <div className="product-item-meta">
-                                        <span className="product-item-price">{formatPrice(product.price)}</span>
+                                        <span className="product-item-price">
+                                            {isMeli && product.meliPrice != null ? (
+                                                <>
+                                                    <span style={{ background: '#FFE600', color: '#333', fontSize: '9px', fontWeight: '800', padding: '1px 5px', borderRadius: '3px', marginRight: '5px', verticalAlign: 'middle' }}>meli</span>
+                                                    {formatPrice(product.meliPrice)}
+                                                </>
+                                            ) : (
+                                                formatPrice(product.price)
+                                            )}
+                                        </span>
                                         <span className={`product-item-stock ${availableStock < 10 ? 'low' : ''}`}>
                                             {isOutOfStock ? 'Sin stock' : `${availableStock} disp.`}
                                         </span>

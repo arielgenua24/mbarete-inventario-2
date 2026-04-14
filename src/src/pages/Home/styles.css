@@ -122,6 +122,28 @@
     border-color: #FFA500;
 }
 
+/* "Clientes" - Verde WhatsApp */
+.clientes {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+    border: none;
+    margin-top: 16px;
+    font-weight: 600;
+}
+
+.clientes .home-icon {
+    color: white;
+}
+
+.clientes .home-subtext {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.clientes:hover {
+    background: linear-gradient(135deg, #2de070 0%, #16a085 100%);
+    color: white;
+}
+
 /* Animación al aparecer */
 @keyframes fadeIn {
     from {

@@ -77,7 +77,7 @@ const useFirestore = () => {
   };
 
   //OKAY, producto agregado
-  const addProduct = async (name, price, details, stock, imageUrl = null, sizes = [], category = '', image2 = null, image3 = null) => {
+  const addProduct = async (name, price, details, stock, imageUrl = null, sizes = [], category = '', image2 = null, image3 = null, meliPrice = null) => {
     try {
         //obtenemos el codigo de el producto
     const productCode = await incrementProductCode();
@@ -96,6 +96,22 @@ const useFirestore = () => {
           return isNaN(n) ? trimmed : n;
         }).filter(s => s !== '' && s !== null);
 
+      // Auto-fill meliPrice from siblings with the same name if not provided
+      let resolvedMeliPrice = meliPrice != null ? Number(meliPrice) : null;
+      if (resolvedMeliPrice == null && processedName) {
+        try {
+          const siblingsSnap = await getDocs(
+            query(collection(db, 'products'), where('name', '==', processedName))
+          );
+          siblingsSnap.forEach((sibDoc) => {
+            const sibData = sibDoc.data();
+            if (sibData.meliPrice != null && resolvedMeliPrice == null) {
+              resolvedMeliPrice = Number(sibData.meliPrice);
+            }
+          });
+        } catch (_e) { /* ignore */ }
+      }
+
       const productData = {
         productCode, // productCode usualmente tiene un formato específico, no se convierte
         name: processedName,
@@ -107,6 +123,7 @@ const useFirestore = () => {
         updatedAt: serverTimestamp(), // Use Firestore server timestamp for delta sync
         createdAt: formattedDate, // Keep formatted date for display purposes
       };
+      if (resolvedMeliPrice != null) productData.meliPrice = resolvedMeliPrice;
 
       // Add image fields only if they exist
       if (imageUrl) productData.imageUrl = imageUrl;
@@ -183,13 +200,12 @@ const useFirestore = () => {
       updatedAt: serverTimestamp(),
     });
 
-    // Propagate image fields (including deletions) to siblings with the same name.
-    // We check `field in values` instead of `values[field] != null` so that
-    // explicitly setting a field to null (deletion) also bubbles to siblings.
+    // Propagate image fields AND meliPrice to siblings with the same name.
     const imageFields = ['imageUrl', 'image2', 'image3'];
     const changedImageFields = imageFields.filter(f => f in values);
+    const meliPriceChanged = 'meliPrice' in values;
 
-    if (changedImageFields.length > 0 && values.name) {
+    if ((changedImageFields.length > 0 || meliPriceChanged) && values.name) {
       const siblingsSnap = await getDocs(
         query(collection(db, 'products'), where('name', '==', values.name))
       );
@@ -197,7 +213,10 @@ const useFirestore = () => {
         if (sibDoc.id !== productId) {
           const sibUpdate = { updatedAt: serverTimestamp() };
           for (const field of changedImageFields) {
-            sibUpdate[field] = values[field]; // propagates null (deletion) too
+            sibUpdate[field] = values[field];
+          }
+          if (meliPriceChanged) {
+            sibUpdate.meliPrice = values.meliPrice;
           }
           batch.update(sibDoc.ref, sibUpdate);
         }

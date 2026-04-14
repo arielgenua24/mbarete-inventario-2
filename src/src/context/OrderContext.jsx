@@ -238,6 +238,8 @@ const OrderProvider = ({ children }) => {
         address: '',
         products: [],
       })
+      setIsMeli(false);
+      localStorage.removeItem('order-is-meli');
     }
 
     useEffect(() => {
@@ -249,9 +251,16 @@ const OrderProvider = ({ children }) => {
     }, [order]);
 
     const [ordersState, setOrdersState] = useState([])
+    const [isMeli, setIsMeli] = useState(() => {
+      return localStorage.getItem('order-is-meli') === 'true';
+    });
+
+    useEffect(() => {
+      localStorage.setItem('order-is-meli', String(isMeli));
+    }, [isMeli]);
 
   return (
-    <OrderContext.Provider value={{ order, setCart, resetOrderValues,setNullCart, setOrder, addItem, updateQuantity, deleteItem, findItem, finditems, cart, clearCustomerData, getCustomerData, setOrdersState, ordersState }}>
+    <OrderContext.Provider value={{ order, setCart, resetOrderValues,setNullCart, setOrder, addItem, updateQuantity, deleteItem, findItem, finditems, cart, clearCustomerData, getCustomerData, setOrdersState, ordersState, isMeli, setIsMeli }}>
       {children}
     </OrderContext.Provider>
   );

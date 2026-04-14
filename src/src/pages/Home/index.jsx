@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useOrder } from '../../hooks/useOrder';
-import { Inbox, ShoppingCart, List, Package, MessageSquare } from 'lucide-react';
+import { Inbox, ShoppingCart, List, Package, MessageSquare, Users } from 'lucide-react';
 import useFirestoreContext from '../../hooks/useFirestoreContext';
 import LoadingComponent from '../../components/Loading';
 import PaymentNavbar from '../../components/PaymentNavbar';
@@ -107,6 +107,15 @@ function Home() {
                         <MessageSquare size={24} className="home-icon" />
                         Notas del Equipo
                         <span className="home-subtext">Comunicación y registro de eventos</span>
+                    </button>
+                </Link>
+
+                {/* Clientes */}
+                <Link to="/clientes" className="home-link">
+                    <button className="home-btn clientes">
+                        <Users size={24} className="home-icon" />
+                        Clientes
+                        <span className="home-subtext">Contactá a tus clientes por WhatsApp</span>
                     </button>
                 </Link>
             </div>

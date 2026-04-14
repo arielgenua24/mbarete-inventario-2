@@ -9,7 +9,7 @@ import ImageModal from '../../components/ImageModal';
 import './styles.css'; // Import new Airbnb styles
 
 const Cart = () => {
-  const { cart, order, resetOrderValues } = useOrder();
+  const { cart, order, resetOrderValues, isMeli } = useOrder();
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const { createOrder, isCreating } = useLocalOrders();
@@ -20,9 +20,12 @@ const Cart = () => {
 
   const navigate = useNavigate();
 
-  // Calculate Total Price
+  // Calculate Total Price (use meli price if this is a meli sale)
   const totalPrice = cart.reduce((acc, item) => {
-    const price = item.product?.price || item.item?.price || 0;
+    const product = item.product || item.item;
+    const price = isMeli
+      ? (product?.meliPrice ?? product?.price ?? 0)
+      : (product?.price ?? 0);
     const quantity = item.quantity || 1;
     return acc + (price * quantity);
   }, 0);
@@ -111,7 +114,7 @@ const Cart = () => {
     console.log('🚀 Creating optimistic order with cart:', cart);
 
     try {
-      const result = await createOrder(customerData, cart);
+      const result = await createOrder({ ...customerData, isMeli }, cart);
 
       if (result.success) {
         console.log(`✅ Order created in ${result.duration.toFixed(2)}ms: ${result.orderId}`);
@@ -141,6 +144,12 @@ const Cart = () => {
       <div className="cart-header">
         <h1 className="cart-title">Tu Carrito</h1>
         <p className="cart-subtitle">{cart.length} {cart.length === 1 ? 'producto' : 'productos'} seleccionados</p>
+        {isMeli && (
+          <div className="cart-meli-badge">
+            <span className="cart-meli-logo">meli+</span>
+            <span>Precios Mercado Libre</span>
+          </div>
+        )}
       </div>
 
       <OrderSummary order={order} cart={cart} />
@@ -180,6 +189,7 @@ const Cart = () => {
                   quantity={item.quantity}
                   selectedVariants={variants}
                   onImageClick={(url) => setSelectedImage(url)}
+                  isMeli={isMeli}
                 />
               </div>
             );
@@ -210,6 +220,7 @@ const Cart = () => {
                         quantity={item.quantity}
                         selectedVariants={variants}
                         onImageClick={(url) => setSelectedImage(url)}
+                        isMeli={isMeli}
                       />
                     </div>
                   );

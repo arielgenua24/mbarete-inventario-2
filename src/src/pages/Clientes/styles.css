@@ -1,0 +1,249 @@
+.clientes-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FDF8F9 0%, #F9F0F2 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Header */
+.clientes-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid #f0e8ea;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.clientes-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.clientes-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+/* Modal overlay */
+.clientes-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.clientes-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.clientes-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+  text-align: center;
+}
+
+.clientes-modal-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  align-self: flex-start;
+}
+
+/* Mode selection buttons */
+.clientes-modal-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.clientes-modal-btn:active {
+  transform: scale(0.97);
+}
+
+.clientes-modal-btn.custom {
+  background: #F1F7FF;
+  border-color: #0990FF;
+  color: #0055cc;
+}
+
+.clientes-modal-btn.promo {
+  background: #FFF4E3;
+  border-color: #F7780F;
+  color: #c05d00;
+}
+
+.clientes-modal-icon {
+  flex-shrink: 0;
+}
+
+/* Textarea */
+.clientes-modal-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e0d5d8;
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  color: #333;
+}
+
+.clientes-modal-textarea:focus {
+  border-color: #0990FF;
+}
+
+.clientes-modal-confirm {
+  padding: 13px;
+  background: #0990FF;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.clientes-modal-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Client list */
+.clientes-list-container {
+  padding: 16px;
+}
+
+.clientes-message-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #e7f7e7;
+  border: 1px solid #b2dfb2;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #2a6e2a;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.clientes-message-preview svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.clientes-loading,
+.clientes-empty {
+  text-align: center;
+  color: #888;
+  margin-top: 60px;
+  font-size: 15px;
+}
+
+.clientes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.clientes-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.clientes-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clientes-item-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.clientes-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clientes-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+.clientes-item-phone {
+  font-size: 13px;
+  color: #666;
+}
+
+.clientes-item-talle {
+  font-size: 12px;
+  color: #999;
+}
+
+.clientes-item-wpp {
+  color: #25D366;
+  flex-shrink: 0;
+}

@@ -371,6 +371,7 @@ class SyncWorker {
           products: order.products,
           totalAmount: order.totalAmount,
           location: orderLocation,
+          isMeli: order.isMeli === true,
           createdByEmail: order.createdByEmail || null,
           status: order.status,
           createdAt: serverTimestamp(),

@@ -134,6 +134,8 @@ const useLocalOrders = () => {
       const orderCode = orderId.slice(-8); // Use last 8 characters as order code
       const now = new Date().toISOString();
 
+      const isMeli = orderData.isMeli === true;
+
       // Step 3: Prepare order data with product snapshots AND stock deltas
       const orderProducts = products.map(cartItem => {
         const product = cartItem.product || cartItem.item;
@@ -142,12 +144,15 @@ const useLocalOrders = () => {
           color: null
         };
         const quantitySold = Number(cartItem.quantity);
+        const effectivePrice = isMeli && product.meliPrice != null
+          ? Number(product.meliPrice)
+          : Number(product.price);
 
         return {
           productId: product.id,
           productSnapshot: {
             name: product.name,
-            price: product.price,
+            price: effectivePrice,
             productCode: product.productCode,
             imageUrl: product.imageUrl || null,
             category: product.category || null,
@@ -158,7 +163,7 @@ const useLocalOrders = () => {
             size: variants.size || null,
             color: variants.color || null
           },
-          subtotal: Number(product.price) * quantitySold,
+          subtotal: effectivePrice * quantitySold,
           // CRITICAL: Store stock delta for atomic Firestore update
           stockDelta: -quantitySold // Negative = reduction
         };
@@ -175,6 +180,7 @@ const useLocalOrders = () => {
         products: orderProducts,
         totalAmount,
         location,
+        isMeli,
         createdByEmail: user,
         status: 'pending',
         createdAt: now,

@@ -50,6 +50,7 @@ function ProductFormModal({ handleSubmit, newProduct, setNewProduct, setIsModalO
       ...newProduct,
       name: suggestion.name,
       price: suggestion.price,
+      meliPrice: suggestion.meliPrice ?? newProduct.meliPrice ?? '',
       details: suggestion.details || '',
     };
     if (suggestion.imageUrl) { setImageUrl(suggestion.imageUrl); updated.imageUrl = suggestion.imageUrl; }
@@ -196,6 +197,23 @@ function ProductFormModal({ handleSubmit, newProduct, setNewProduct, setIsModalO
                   <p className="pf-admin-hint">Solo admin puede editar</p>
                 )}
               </div>
+            </div>
+
+            {/* ── Precio Mercado Libre ── */}
+            <div className="pf-field pf-field--meli">
+              <label className="pf-label pf-label--meli">
+                <span className="pf-meli-badge">meli</span>
+                Precio Mercado Libre
+              </label>
+              <input
+                type="number"
+                value={newProduct.meliPrice || ''}
+                onChange={(e) => setNewProduct({ ...newProduct, meliPrice: e.target.value })}
+                className="pf-input pf-input--meli"
+                placeholder="0"
+                min="0"
+              />
+              <p className="pf-hint">Se sincroniza automáticamente con productos del mismo nombre.</p>
             </div>
 
             {/* ── Detalles ── */}

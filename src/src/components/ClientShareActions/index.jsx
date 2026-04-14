@@ -19,7 +19,8 @@ function ClientShareActions({ order, variant = 'full' }) {
   // Generar URL pública para el cliente
   const getPublicUrl = () => {
     const baseUrl = window.location.origin;
-    return `${baseUrl}/#/mi-compra/${orderId}`;
+    const meliParam = order?.isMeli ? '?isMeli=true' : '';
+    return `${baseUrl}/#/mi-compra/${orderId}${meliParam}`;
   };
 
   // Formatear número de teléfono argentino

@@ -164,9 +164,14 @@ function EarningsDetails() {
           <span className="earnings-summary-label">Venta</span>
           <strong>{selectedOrder.orderCode || selectedOrder.id}</strong>
         </div>
-        <span className={`earnings-scope-pill earnings-scope-pill--${selectedOrder.location}`}>
-          {getScopeLabel(selectedOrder.location)}
-        </span>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {selectedOrder.isMeli && (
+            <span style={{ background: '#FFE600', color: '#333', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '8px' }}>meli+</span>
+          )}
+          <span className={`earnings-scope-pill earnings-scope-pill--${selectedOrder.location}`}>
+            {getScopeLabel(selectedOrder.location)}
+          </span>
+        </div>
       </div>
 
       <div className="earnings-total-banner">
@@ -261,6 +266,7 @@ function EarningsDetails() {
             <div className="earnings-list-copy">
               <strong>
                 Venta {getOrderDate(order)?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                {order.isMeli && <span style={{ background: '#FFE600', color: '#333', fontSize: '9px', fontWeight: '800', padding: '1px 5px', borderRadius: '3px', marginLeft: '6px', verticalAlign: 'middle' }}>meli</span>}
               </strong>
               <small>{order.cliente || order.customerName || 'Cliente sin nombre'}</small>
             </div>
@@ -302,6 +308,7 @@ function EarningsDetails() {
               <div className="earnings-list-copy">
                 <strong>
                   Venta {getOrderDate(order)?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                  {order.isMeli && <span style={{ background: '#FFE600', color: '#333', fontSize: '9px', fontWeight: '800', padding: '1px 5px', borderRadius: '3px', marginLeft: '6px', verticalAlign: 'middle' }}>meli</span>}
                 </strong>
                 <small>{order.cliente || order.customerName || 'Cliente sin nombre'}</small>
               </div>

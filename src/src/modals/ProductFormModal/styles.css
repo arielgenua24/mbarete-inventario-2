@@ -434,3 +434,36 @@
   transform: translateX(-50%) translateY(0);
   opacity: 1;
 }
+
+/* Mercado Libre price field */
+.pf-field--meli {
+  border: 1.5px solid #FFE600;
+  border-radius: 10px;
+  padding: 12px;
+  background: #FFFDE7;
+}
+
+.pf-label--meli {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pf-meli-badge {
+  background: #FFE600;
+  color: #333;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.pf-input--meli {
+  border-color: #FFE600 !important;
+}
+.pf-input--meli:focus {
+  outline-color: #FFE600;
+  box-shadow: 0 0 0 2px rgba(255,230,0,0.3);
+}

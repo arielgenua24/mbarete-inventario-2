@@ -4,7 +4,7 @@ import './styles.css';
 import { useOrder } from '../../hooks/useOrder';
 import { useNavigate } from 'react-router-dom';
 
-const OrderCard = ({ product, quantity, selectedVariants, onImageClick }) => {
+const OrderCard = ({ product, quantity, selectedVariants, onImageClick, isMeli }) => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
   const { deleteItem } = useOrder()
@@ -135,12 +135,23 @@ const OrderCard = ({ product, quantity, selectedVariants, onImageClick }) => {
             </div>
           )}
           <div className="cart-info-item">
-            <span className="cart-info-label">Precio</span>
-            <span className="cart-info-value">${product.price}</span>
+            <span className="cart-info-label">
+              {isMeli ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ background: '#FFE600', color: '#333', fontSize: '9px', fontWeight: '800', padding: '1px 5px', borderRadius: '3px' }}>meli</span>
+                  Precio
+                </span>
+              ) : 'Precio'}
+            </span>
+            <span className="cart-info-value">
+              ${isMeli ? (product.meliPrice ?? product.price) : product.price}
+            </span>
           </div>
           <div className="cart-info-item cart-total">
             <span className="cart-info-label">Total</span>
-            <span className="cart-info-value">${(product.price * quantity).toFixed(2)}</span>
+            <span className="cart-info-value">
+              ${((isMeli ? (product.meliPrice ?? product.price) : product.price) * quantity).toFixed(2)}
+            </span>
           </div>
         </div>
       </div>

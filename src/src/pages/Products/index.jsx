@@ -29,6 +29,7 @@ function Product() {
   // Talles como string editable "38,40,42" para facilitar edición
   const [sizesInput, setSizesInput] = useState('');
   const [category, setCategory] = useState('');
+  const [meliPrice, setMeliPrice] = useState('');
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -56,6 +57,7 @@ function Product() {
         : (fetchedProduct.sizes || '');
       setSizesInput(existingSizes);
       setCategory(fetchedProduct.category || '');
+      setMeliPrice(fetchedProduct.meliPrice != null ? fetchedProduct.meliPrice : '');
       setIsLoading(false);
     };
     loadProducts();
@@ -85,6 +87,7 @@ function Product() {
       id,
       name,
       price: price === '' ? 0 : Number(price),
+      meliPrice: meliPrice === '' ? null : Number(meliPrice),
       stock: stock === '' ? 0 : Number(stock),
       details,
       updatedAt: formattedDate,
@@ -151,6 +154,25 @@ function Product() {
                 required
               />
             </label>
+
+            {/* Precio Mercado Libre */}
+            <div className="product-editor-field product-editor-field-full" style={{ border: '1.5px solid #FFE600', borderRadius: '10px', padding: '12px', background: '#FFFDE7' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontWeight: '600', fontSize: '0.875rem' }}>
+                <span style={{ background: '#FFE600', color: '#333', fontSize: '10px', fontWeight: '800', padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>meli</span>
+                Precio Mercado Libre
+              </label>
+              <input
+                type="number"
+                className="product-editor-input"
+                placeholder={product.meliPrice != null ? `Actual: ${product.meliPrice}` : 'Sin precio Meli'}
+                value={meliPrice}
+                onChange={(e) => { setMeliPrice(e.target.value); setChanges(true); }}
+                min="0"
+                step="0.01"
+                style={{ borderColor: '#FFE600' }}
+              />
+              <small className="product-editor-hint">Se sincroniza automáticamente con productos del mismo nombre.</small>
+            </div>
 
             <label className="product-editor-field product-editor-field-full">
               <span>Detalles del producto</span>
