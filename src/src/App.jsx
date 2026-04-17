@@ -37,6 +37,7 @@ const SearchPage = lazy(() => import('./pages/Search'));
 const TeamNotesPage = lazy(() => import('./pages/TeamNotesPage'));
 const MiCompra = lazy(() => import('./pages/MiCompra'));
 const Clientes = lazy(() => import('./pages/Clientes'));
+const SoldProductsDetail = lazy(() => import('./pages/SoldProducts/Detail'));
 
 function AppRouter() {
   let router = useRoutes([
@@ -62,6 +63,7 @@ function AppRouter() {
     { path: '/search', element: <SearchPage /> },
     { path: '/team-notes', element: <TeamNotesPage /> },
     { path: '/clientes', element: <Clientes /> },
+    { path: '/selled-products/:period', element: <SoldProductsDetail /> },
     // Ruta PÚBLICA - para que clientes vean su compra (no requiere login)
     { path: '/mi-compra/:orderId', element: <MiCompra /> },
   ]);

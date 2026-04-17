@@ -356,6 +356,32 @@ const useFirestore = () => {
     }
   };
 
+  /**
+   * Returns all orders whose createdAt is within [start, end).
+   * Used by the SoldProducts detail page to count items sold in a period.
+   *
+   * @param {Date} start - Start of the range (inclusive)
+   * @param {Date} end   - End of the range (exclusive)
+   * @returns {Promise<Array>} - Array of normalized order objects with embedded products
+   */
+  const getOrdersByDateRangeBounded = async (start, end) => {
+    try {
+      const q = query(
+        collection(db, 'orders'),
+        where('createdAt', '>=', Timestamp.fromDate(start)),
+        where('createdAt', '<', Timestamp.fromDate(end)),
+        orderBy('createdAt', 'desc'),
+      );
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((docSnap) =>
+        normalizeOrderRecord({ id: docSnap.id, ...docSnap.data() })
+      );
+    } catch (error) {
+      console.error('Error fetching orders by date range:', error);
+      throw error;
+    }
+  };
+
     /**
      * Delete an order and restore stock to products.
      *
@@ -929,6 +955,7 @@ const useFirestore = () => {
     getOrderById,
     filterOrdersByDate,
     getOrdersForInboxPeriod,
+    getOrdersByDateRangeBounded,
     updateOrder,
     deleteOrder,
     getProductsByOrder,

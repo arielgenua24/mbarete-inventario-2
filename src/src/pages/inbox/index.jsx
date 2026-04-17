@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useFirestoreContext from '../../hooks/useFirestoreContext';
 import useIsAdmin from '../../hooks/useIsAdmin';
@@ -13,6 +13,8 @@ import {
   REPORT_PERIODS,
   sumOrders,
 } from '../../utils/orderReporting';
+import { getMonthWeeks, getMonthNameEs } from '../../utils/dateUtils';
+import kellyAudio from '../../assets/sounds/kelly.mp3';
 import './styles.css';
 
 const PERIOD_OPTIONS = [
@@ -32,7 +34,25 @@ function Inbox() {
   const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
 
+  // ── SP-Section: cuántas prendas has vendido ──
+  const now = useMemo(() => new Date(), []);
+  const weeks = useMemo(() => getMonthWeeks(now), [now]);
+  const monthName = useMemo(() => getMonthNameEs(now), [now]);
+  const currentWeek = useMemo(() => weeks.find(w => w.isCurrent), [weeks]);
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+
+  const audioRef = useRef(null);
+  const playAudio = () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(kellyAudio);
+    }
+    audioRef.current.currentTime = 0;
+    audioRef.current.play();
+  };
+
   const [selectedPeriod, setSelectedPeriod] = useState(REPORT_PERIODS.DAILY);
+  const [chartScope, setChartScope] = useState(ORDER_SCOPES.LOCAL_AVELLANEDA);
   const [periodCache, setPeriodCache] = useState({
     [REPORT_PERIODS.DAILY]:   null,
     [REPORT_PERIODS.WEEKLY]:  null,
@@ -73,6 +93,29 @@ function Inbox() {
   }, [activePeriod, periodCache, fetchPeriod]);
 
   const activeOrders = periodCache[activePeriod] ?? [];
+
+  const CHART_SCOPES = [
+    { id: ORDER_SCOPES.LOCAL_AVELLANEDA, label: 'Avellaneda' },
+    { id: ORDER_SCOPES.CENTRAL,          label: 'Mercado Libre' },
+    { id: ORDER_SCOPES.TOTAL,            label: 'Total' },
+  ];
+
+  const topProducts = useMemo(() => {
+    const scopedOrders = activeOrders.filter(o => matchesOrderScope(o, chartScope));
+    const productMap = {};
+    scopedOrders.forEach(order => {
+      (order.products || []).forEach(item => {
+        const name = item.productSnapshot?.name;
+        if (!name) return;
+        const qty = item.quantity || item.stock || 1;
+        productMap[name] = (productMap[name] || 0) + qty;
+      });
+    });
+    return Object.entries(productMap)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 7)
+      .map(([name, count]) => ({ name, count }));
+  }, [activeOrders, chartScope]);
 
   const scopeCards = useMemo(() => {
     return cardScopes.map((scope) => {
@@ -148,6 +191,123 @@ function Inbox() {
               </div>
             </article>
           ))}
+        </section>
+
+        {/* ── Más vendidos chart ── */}
+        <section className={`top-products-section${chartScope === ORDER_SCOPES.CENTRAL ? ' top-products-section--meli' : ''}`}>
+          <header className="top-products-header">
+            <h2 className="top-products-title">Más vendidos</h2>
+            <span className="top-products-period-badge">
+              {PERIOD_OPTIONS.find(o => o.id === activePeriod)?.label}
+            </span>
+          </header>
+
+          <div className="top-products-tabs" role="tablist" aria-label="Sede">
+            {CHART_SCOPES.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={chartScope === tab.id}
+                className={`top-products-tab${chartScope === tab.id ? ' top-products-tab--active' : ''}`}
+                onClick={() => setChartScope(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {topProducts.length === 0 ? (
+            <div className="top-products-empty">Sin ventas registradas para este período</div>
+          ) : (
+            <div className="top-products-chart">
+              {topProducts.map((item, i) => {
+                const pct = Math.round((item.count / topProducts[0].count) * 100);
+                return (
+                  <div key={item.name} className="top-products-row">
+                    <span className="top-products-rank">#{i + 1}</span>
+                    <div className="top-products-bar-area">
+                      <div className="top-products-bar-label">{item.name}</div>
+                      <div className="top-products-bar-track">
+                        <div className="top-products-bar-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                    <span className="top-products-count">{item.count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* ── Cuántas prendas has vendido ── */}
+        <section className="sp-section">
+
+          <header className="sp-section-header">
+            <div className="sp-logo-circle" onClick={playAudio} role="button" tabIndex={0}>
+              <img
+                src="https://ik.imagekit.io/arielgenua/ChatGPT%20Image%206%20abr%202026,%2005_54_51%20p.m..png"
+                alt="Mbarete Inventory"
+              />
+            </div>
+            <h2 className="sp-section-title">Cuántas prendas has vendido<span className="sp-title-accent">?</span></h2>
+          </header>
+
+          {/* Recientes */}
+          <div className="sp-group">
+            <p className="sp-group-label">Recientes</p>
+            <div className="sp-recientes-row">
+              <button
+                className="sp-card sp-card-reciente sp-card--active"
+                onClick={() => navigate('/selled-products/today')}
+              >
+                <span className="sp-card-eyebrow">HOY</span>
+                <span className="sp-card-main">{dd}/{mm}</span>
+              </button>
+              <button
+                className="sp-card sp-card-reciente sp-card--active"
+                onClick={() => navigate(`/selled-products/week-${currentWeek?.weekNum ?? 1}`)}
+              >
+                <span className="sp-card-eyebrow">Esta semana</span>
+                <span className="sp-card-main">{monthName}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Semanas */}
+          <div className="sp-group">
+            <p className="sp-group-label">Semanas</p>
+            <div className="sp-weeks-scroll">
+              {weeks.map((week) => {
+                const ordinals = ['1ra', '2da', '3ra', '4ta', '5ta'];
+                const ord = ordinals[week.weekNum - 1] || `${week.weekNum}ta`;
+                return (
+                  <button
+                    key={week.weekNum}
+                    className={`sp-card sp-card-week${week.isFuture ? ' sp-card--future' : ''}${week.isCurrent ? ' sp-card--active' : ''}`}
+                    onClick={() => !week.isFuture && navigate(`/selled-products/week-${week.weekNum}`)}
+                    disabled={week.isFuture}
+                  >
+                    <span className="sp-card-eyebrow">{ord} semana</span>
+                    <span className="sp-card-main sp-card-main--sm">de {monthName}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Mes */}
+          <div className="sp-group">
+            <p className="sp-group-label">Mes</p>
+            <button
+              className="sp-card sp-card-month"
+              onClick={() => navigate('/selled-products/month')}
+            >
+              <span className="sp-card-eyebrow">Este mes</span>
+              <span className="sp-card-main">{monthName}</span>
+            </button>
+          </div>
+
         </section>
       </div>
     </div>

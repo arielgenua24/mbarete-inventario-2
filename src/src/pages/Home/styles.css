@@ -1,158 +1,424 @@
-/* Página completa */
+/* ==============================================
+   HOME PAGE — REDESIGN
+   Palette:  #F3EEE6 (bone)  |  #0061FF (blue)
+   Style:    Kyle-UI inspired cards + dashed divs
+   ============================================== */
+
+/* ---- Base page with dot-pattern background ---- */
 .home-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #FDF8F9 0%, #F9F0F2 100%);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #F3EEE6;
+    background-image: radial-gradient(circle, #c9c2b8 2px, transparent 2px);
+    background-size: 24px 24px;
+    animation: dotDrift 3s linear infinite;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, sans-serif;
+    position: relative;
+    overflow-x: hidden;
+    /* bleed out of #root's 2rem padding on all sides */
+    margin: -2rem;
 }
 
-/* Contenedor principal */
+/* ==============================================
+   1. WELCOME SECTION — top 40vh, in-flow
+   8pt grid · SF Pro hierarchy · spring motion
+   ============================================== */
+.welcome-section {
+    height: 40vh;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #F3EEE6;
+    background-image: radial-gradient(circle, #c9c2b8 2px, transparent 2px);
+    background-size: 24px 24px;
+    animation: dotDrift 3s linear infinite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+}
+
+/* --- Welcome inner content --- */
+.welcome-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 360px;
+    width: 100%;
+}
+
+/* Title — Apple Title1: tight tracking, strong weight */
+.welcome-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1D1D1F;
+    text-align: center;
+    line-height: 1.25;
+    letter-spacing: -0.5px;
+    margin: 0;
+    animation: appleSlideUp 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) 0.05s both;
+}
+
+/* Hero row: illustration left · info right */
+.welcome-main {
+    display: flex;
+    align-items: center;      /* vertically centered — Apple aligns to center */
+    gap: 24px;                /* 8pt × 3 */
+    width: 100%;
+    animation: appleSlideUp 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) 0.15s both;
+}
+
+/* ---- Illustration ---- */
+.welcome-icon-placeholder {
+    width: 130px;
+    height: 130px;
+    flex-shrink: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+.welcome-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.14));
+}
+
+/* ---- Right info column ---- */
+.welcome-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;                /* 8pt × 2 */
+}
+
+/* Greeting row: "Hola Majo!" left · red dot right */
+.welcome-greeting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.welcome-greeting {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.4px;
+    line-height: 1.1;
+}
+
+/* Apple notification badge — red circle, white number */
+.welcome-badge {
+    background: #FF3B30;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    letter-spacing: -0.3px;
+    box-shadow: 0 2px 6px rgba(255, 59, 48, 0.4);
+}
+
+/* ---- Scroll indicator ---- */
+.welcome-scroll-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #AEAEB2;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    background: none;
+    border: none;
+    padding: 8px 24px;
+    animation: appleSlideUp 0.6s cubic-bezier(0.34, 1.2, 0.64, 1) 0.35s both;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.welcome-scroll-indicator:active {
+    opacity: 0.6;
+}
+
+.bounce-arrow {
+    animation: bounce 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* ---- Keyframes ---- */
+@keyframes dotDrift {
+    0%   { background-position: 0 0; }
+    100% { background-position: 24px 24px; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(7px); }
+}
+
+/* Apple-style spring slide — slight overshoot on entry */
+@keyframes appleSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==============================================
+   2. HOME CONTENT
+   ============================================== */
 .home-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    padding: 20px;
-    min-height: calc(100vh - 80px);
+    padding: 20px 20px 50px;
+    gap: 18px;
 }
 
-/* Texto de bienvenida */
-.home-welcome-text {
-    font-size: 24px;
-    text-align: center;
-    margin: 20px 0 30px 0;
-    color: #555;
-    font-weight: 600;
-}
-
-/* Enlaces */
+/* ==============================================
+   3. KYLE-UI CARDS  (Dinero, Catálogo)
+   Soft white, big radius, faint shadow
+   ============================================== */
 .home-link {
-    width: 100%;
     text-decoration: none;
+    width: 100%;
     display: flex;
     justify-content: center;
-    margin-bottom: 16px;
 }
 
-/* Botones */
-.home-btn {
+.home-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 320px;
+    padding: 18px 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+}
+
+.home-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.10);
+}
+
+.card-icon-area {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #F5F5F5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #555;
+}
+
+.card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+}
+
+.card-subtitle {
+    font-size: 12px;
+    color: #999;
+}
+
+/* -- Dinero card specifics -- */
+.dinero-card .card-icon-area {
+    background: #F3EEE6;
+    width: 128px;
+    height: 128px;
+    border-radius: 20px;
+}
+
+/* -- Catalog card specifics -- */
+.catalog-card .card-icon-area {
+    background: #F3EEE6;
+    width: 128px;
+    height: 128px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.catalog-card .card-icon-img {
+    transform: scale(1.7);
+    transform-origin: center center;
+}
+
+.card-icon-img {
+    width: 112px;
+    height: 112px;
+    object-fit: contain;
+}
+
+/* ==============================================
+   4. ORDERS — DASHED BLUE CONTAINER
+   ============================================== */
+.orders-dashed-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    max-width: 320px;
+    padding: 16px 18px;
+    border: 2.5px dashed #0061FF;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.dashed-icon-area {
+    width: 128px;
+    height: 128px;
+    border-radius: 20px;
+    background: #F3EEE6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.dashed-icon-area .card-icon-img {
+    transform: scale(1.4);
+    transform-origin: center center;
+}
+
+.orders-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.home-link-inner {
+    text-decoration: none;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.order-item:hover {
+    opacity: 0.7;
+}
+
+.order-item-icon {
+    color: #0061FF;
+    flex-shrink: 0;
+}
+
+.order-item-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.order-item-text .card-title {
+    font-size: 14px;
+    color: #0061FF;
+}
+
+.order-item-text .card-subtitle {
+    font-size: 11px;
+}
+
+.order-divider {
+    height: 1px;
+    background: rgba(0, 97, 255, 0.15);
+}
+
+/* ==============================================
+   5. OTHER ACTIONS — DASHED CONTAINER
+      (Notas del Equipo + Clientes, horizontal)
+   ============================================== */
+.other-actions-container {
+    width: 100%;
+    max-width: 320px;
+    border: 2.5px dashed rgba(0, 0, 0, 0.18);
+    border-radius: 20px;
+    padding: 20px 16px 16px;
+    position: relative;
+    margin-top: 8px;
+    background: transparent;
+}
+
+.other-actions-label {
+    position: absolute;
+    top: -10px;
+    left: 18px;
+    background: #F3EEE6;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.other-actions-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.other-action-link {
+    text-decoration: none;
+    flex: 1;
+}
+
+.other-action-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 260px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(10px);
-    border: none;
-    border-radius: 18px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    font-size: 16px;
-    font-weight: 500;
-    color: #222;
-    transition: transform 0.2s ease, background 0.3s ease;
+    gap: 8px;
+    padding: 18px 12px;
+    background: white;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
     cursor: pointer;
-    position: relative;
-}
-
-.home-btn:hover {
-    transform: scale(1.05);
-    background: rgba(255, 255, 255, 0.8);
-    color: #222;
-}
-
-/* Íconos */
-.home-icon {
-    position: absolute;
-    top: 10px;
-    left: 12px;
-    color: #666;
-}
-
-/* Subtexto debajo de cada botón */
-.home-subtext {
-    font-size: 12px;
-    color: #777;
-    margin-top: 4px;
-}
-
-/* "Dinero y notificaciones" - Fondo negro, borde dorado y tipografía blanca */
-.inbox {
-    background: black;
-    border: 2px solid gold;
-    color: white;
-    margin-bottom: 30px;
-}
-
-/* "Nuevo Pedido" y "Pedidos" - Fondo azul claro y borde azul oscuro */
-.order {
-    background: #F1F7FF;
-    border: 2px solid #0990FF;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-/* Sección de órdenes - Hace que los botones de pedido estén más juntos */
-.home-orders-section {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    width: 100%;
-    max-width: 280px;
-}
-
-/* "Catálogo" - Naranja crema con margen superior */
-.catalog {
-    background: #FFE3D1;
-    color: #F7780F;
-    border: none;
-    margin-top: 30px;
-}
-
-/* "Notas del Equipo" - Amarillo Apple Notes style */
-.notes {
-    background: linear-gradient(135deg, #FFCC00 0%, #FFD93D 100%);
+    transition: transform 0.2s ease, background 0.2s ease;
     color: #1D1D1F;
-    border: 2px solid #FFB800;
-    margin-top: 16px;
+    font-size: 13px;
     font-weight: 600;
 }
 
-.notes:hover {
-    background: linear-gradient(135deg, #FFD700 0%, #FFE066 100%);
-    border-color: #FFA500;
-}
-
-/* "Clientes" - Verde WhatsApp */
-.clientes {
-    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-    color: white;
-    border: none;
-    margin-top: 16px;
-    font-weight: 600;
-}
-
-.clientes .home-icon {
-    color: white;
-}
-
-.clientes .home-subtext {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.clientes:hover {
-    background: linear-gradient(135deg, #2de070 0%, #16a085 100%);
-    color: white;
-}
-
-/* Animación al aparecer */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.other-action-item:hover {
+    transform: scale(1.04);
+    background: #F5F5F5;
 }
