@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDesktopAnalytics } from '../../hooks/useDesktopAnalytics';
 import { formatCurrency } from '../../utils/orderReporting';
 import { getMonthNameEs } from '../../utils/dateUtils';
+import { cacheAgeLabel } from '../../utils/cache';
 import ImageModal from '../ImageModal';
 import './styles.css';
 
@@ -104,8 +105,15 @@ function Section({ title, pill, children }) {
 }
 
 function RightAnalyticsPanel() {
-  const { loading, top5, bottom5, lowStock, pareto } = useDesktopAnalytics();
+  const { loading, cachedAt, top5, bottom5, lowStock, pareto } = useDesktopAnalytics();
   const month = getMonthNameEs(new Date());
+
+  // Tick every minute so the "hace X min" label stays current
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   if (loading) {
     return (
@@ -126,6 +134,11 @@ function RightAnalyticsPanel() {
       <header className="rap-header">
         <span className="rap-header-kicker">Análisis · {month}</span>
         <h2 className="rap-header-title">Resumen de elementos</h2>
+        {cachedAt && (
+          <span className="rap-cache-label">
+            Actualizado {cacheAgeLabel(cachedAt)} · se actualiza cada 2 h
+          </span>
+        )}
       </header>
 
       <div className="rap-body">

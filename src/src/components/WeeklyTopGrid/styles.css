@@ -1,0 +1,575 @@
+/* =====================================================
+   WEEKLY TOP GRID — Notion-style light layout
+   ===================================================== */
+
+.wtg-root {
+  --wtg-bg:             #ffffff;
+  --wtg-surface:        #ffffff;
+  --wtg-surface-soft:   #f7f6f3;
+  --wtg-surface-softer: #fafaf8;
+  --wtg-border:         #ececec;
+  --wtg-border-strong:  #e0e0e0;
+  --wtg-text:           #1f1f1f;
+  --wtg-text-soft:      #6b6b6b;
+  --wtg-text-muted:     #9a9a9a;
+  --wtg-accent:         #e03131;
+  --wtg-link:           #2e7bff;
+  --wtg-beige:          #f1ece0;
+  --wtg-beige-line:     #e6dfcd;
+  --wtg-beige-border:   #cfc7b2;
+
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 28px 24px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  color: var(--wtg-text);
+}
+
+/* ── Horizontal-carousel summary pills ─────────────── */
+.wtg-highlights {
+  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  padding: 2px 2px 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+.wtg-highlights::-webkit-scrollbar        { height: 6px; }
+.wtg-highlights::-webkit-scrollbar-track  { background: transparent; }
+.wtg-highlights::-webkit-scrollbar-thumb  { background: rgba(0,0,0,0.15); border-radius: 3px; }
+
+.wtg-pill {
+  flex: 0 0 240px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--wtg-surface-soft);
+  color: var(--wtg-text);
+  border-radius: 8px;
+  border: 1px solid var(--wtg-border);
+  min-height: 72px;
+  box-sizing: border-box;
+}
+
+.wtg-pill-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--wtg-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+}
+
+.wtg-pill-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.wtg-pill-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #eee;
+  flex-shrink: 0;
+}
+
+.wtg-pill-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.wtg-pill-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wtg-text);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wtg-pill-qty {
+  font-size: 10px;
+  color: var(--wtg-text-soft);
+  line-height: 1.2;
+}
+
+.wtg-pill-empty {
+  font-size: 11px;
+  color: var(--wtg-text-muted);
+  font-style: italic;
+}
+
+/* ── Board (beige shell wrapping header + stage) ───── */
+.wtg-board {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: var(--wtg-beige);
+  border: 1px solid var(--wtg-beige-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+/* ── Header block (title · shop row · total pill) ──── */
+.wtg-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wtg-header-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--wtg-text);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.wtg-shop-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 4px;
+}
+
+.wtg-shop-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--wtg-surface-soft);
+  border: 1px solid var(--wtg-border);
+  flex-shrink: 0;
+}
+
+.wtg-shop-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--wtg-text);
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+  padding-bottom: 2px;
+  border-bottom: 2px solid var(--wtg-link);
+}
+
+.wtg-total-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--wtg-surface);
+  border: 1px solid var(--wtg-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.wtg-total-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wtg-text-soft);
+  line-height: 1.2;
+}
+
+.wtg-total-icon {
+  color: var(--wtg-text-muted);
+  flex-shrink: 0;
+}
+
+.wtg-total-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--wtg-text);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+
+.wtg-cache-label {
+  font-size: 11px;
+  color: var(--wtg-text-muted);
+  letter-spacing: 0.1px;
+  padding-left: 4px;
+}
+
+/* ── Stage (two columns wrapped in one shell) ─────── */
+.wtg-stage {
+  width: 100%;
+}
+
+.wtg-stage-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  background: var(--wtg-surface);
+  border: 1px solid var(--wtg-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.wtg-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.wtg-column--grid {
+  background: #ffffff;
+}
+
+.wtg-column--panel {
+  background: #fefefe;
+  border-left: 1px solid var(--wtg-border);
+}
+
+.wtg-column-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--wtg-text);
+  letter-spacing: -0.2px;
+  padding-left: 2px;
+}
+
+/* ── Sheet (calendar-like grid) ───────────────────── */
+.wtg-sheet {
+  width: 100%;
+  max-width: 260px;
+  display: grid;
+  row-gap: 0;
+  column-gap: 4px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+/* Month-tab strip: make the header row read as tabs on a soft pill */
+.wtg-month-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--wtg-text-soft);
+  letter-spacing: 0;
+  text-transform: lowercase;
+  padding: 6px 2px;
+  margin-bottom: 4px;
+  text-align: center;
+  background: var(--wtg-beige);
+  border-radius: 6px;
+}
+
+/* ── Cell (quantity) ──────────────────────────────── */
+.wtg-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border-radius: 0;
+  width: 100%;
+  height: 32px;
+  border: none;
+  border-bottom: 1px solid var(--wtg-beige-line);
+  transition: background-color 0.15s ease;
+  cursor: default;
+  user-select: none;
+}
+
+.wtg-cell--clickable {
+  cursor: pointer;
+}
+
+.wtg-cell--clickable:hover .wtg-cell-qty {
+  color: var(--wtg-accent);
+}
+
+.wtg-cell--missing {
+  background: transparent;
+}
+
+.wtg-cell--future {
+  opacity: 0.4;
+}
+
+.wtg-cell--current .wtg-cell-qty,
+.wtg-cell--selected .wtg-cell-qty {
+  color: #ffffff;
+}
+
+.wtg-cell--current .wtg-cell-qty,
+.wtg-cell--selected .wtg-cell-qty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--wtg-accent);
+  box-shadow: 0 4px 10px rgba(224, 49, 49, 0.22);
+}
+
+.wtg-cell-qty {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wtg-text);
+  line-height: 1;
+  letter-spacing: -0.2px;
+  transition: color 0.15s ease;
+}
+
+.wtg-cell-empty {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c8c0ac;
+}
+
+/* ── Detail panel (right column) ──────────────────── */
+.wtg-panel {
+  position: relative;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.wtg-panel-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--wtg-surface-soft);
+  color: var(--wtg-text-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  z-index: 3;
+}
+
+.wtg-panel-close:hover {
+  background: #ececea;
+  color: var(--wtg-text);
+}
+
+.wtg-panel-media {
+  width: 100%;
+  max-height: 240px;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--wtg-surface-soft);
+  flex-shrink: 0;
+  align-self: center;
+  max-width: 240px;
+}
+
+.wtg-panel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wtg-panel-img--placeholder {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 30% 30%, #f0efec 0%, #e4e3df 70%);
+}
+
+.wtg-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.wtg-panel-meta {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--wtg-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.wtg-panel-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--wtg-text-soft);
+  line-height: 1.3;
+  letter-spacing: -0.2px;
+  margin: 0;
+  word-break: break-word;
+  text-align: center;
+}
+
+.wtg-panel-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.wtg-panel-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--wtg-text);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.wtg-panel-stat-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wtg-text);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Mobile backdrop unused in light mode — keep hidden. */
+.wtg-backdrop {
+  display: none;
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 860px) {
+  .wtg-stage-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wtg-column--panel {
+    order: -1;
+    border-left: none;
+    border-bottom: 1px solid var(--wtg-border);
+  }
+  .wtg-panel {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+  .wtg-panel-media {
+    width: 120px;
+    height: 120px;
+    max-width: 120px;
+    max-height: 120px;
+    flex-shrink: 0;
+    align-self: auto;
+  }
+  .wtg-panel-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .wtg-panel-name {
+    text-align: left;
+  }
+  .wtg-panel-stat {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .wtg-root {
+    padding: 20px 16px 20px;
+    gap: 20px;
+  }
+  .wtg-header-title {
+    font-size: 20px;
+  }
+  .wtg-shop-name {
+    font-size: 18px;
+  }
+  .wtg-total-pill {
+    padding: 12px 14px;
+  }
+  .wtg-total-label {
+    font-size: 12px;
+  }
+  .wtg-total-value {
+    font-size: 14px;
+  }
+  .wtg-sheet {
+    padding: 12px;
+    gap: 6px;
+  }
+  .wtg-cell-qty {
+    font-size: 15px;
+  }
+  .wtg-month-header {
+    font-size: 12px;
+    padding: 8px 2px;
+  }
+}
+
+/* ── Footnote ─────────────────────────────────────── */
+.wtg-footnote {
+  width: 100%;
+  font-size: 11px;
+  color: var(--wtg-text-muted);
+  margin: 0;
+  padding: 0 2px;
+  letter-spacing: 0.1px;
+}
+
+/* ── Loading ──────────────────────────────────────── */
+.wtg-loading {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  background: var(--wtg-surface);
+  border: 1px solid var(--wtg-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.wtg-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid rgba(0, 0, 0, 0.08);
+  border-top-color: var(--wtg-text);
+  border-radius: 50%;
+  animation: wtg-spin 0.9s linear infinite;
+}
+
+@keyframes wtg-spin {
+  to { transform: rotate(360deg); }
+}

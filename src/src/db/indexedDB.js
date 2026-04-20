@@ -26,37 +26,30 @@ class ReinaChuraDatabase extends Dexie {
 
     // Define database version and schema
     this.version(1).stores({
-      // Products store - main catalog
-      // Key: id (product ID from Firestore)
-      // Indices: name (for search), productCode (for search), updatedAt (for delta sync)
       products: 'id, name, productCode, updatedAt, category',
-
-      // Catalog metadata - single document for sync tracking
-      // Key: id (always 'local')
       catalogMetadata: 'id',
-
-      // Pending orders - orders not yet synced to Firestore
-      // Key: orderId (generated locally)
-      // Indices: createdAt (for sorting), status (for filtering), attempts (for retry logic)
       pendingOrders: 'orderId, createdAt, status, attempts',
-
-      // Sync queue - tasks to be processed by background worker
-      // Key: taskId (generated locally)
-      // Indices: priority (for ordering), status (for filtering), nextRetryAt (for retry timing)
       syncQueue: 'taskId, priority, status, nextRetryAt',
-
-      // Order history - local copy of synced orders (optional, for offline reports)
-      // Key: orderId (from Firestore)
-      // Indices: createdAt (for sorting), customerName (for search)
       orderHistory: 'orderId, createdAt, customerName'
     });
 
-    // Define table references with TypeScript-like typing (for better IDE support)
+    // v2 — add weeklyTopProducts store for permanent cache of closed weeks
+    // Key: weekKey (e.g. "2026-04-W2"). Index: monthKey for bulk cleanup.
+    this.version(2).stores({
+      products: 'id, name, productCode, updatedAt, category',
+      catalogMetadata: 'id',
+      pendingOrders: 'orderId, createdAt, status, attempts',
+      syncQueue: 'taskId, priority, status, nextRetryAt',
+      orderHistory: 'orderId, createdAt, customerName',
+      weeklyTopProducts: 'weekKey, monthKey, endTime'
+    });
+
     this.products = this.table('products');
     this.catalogMetadata = this.table('catalogMetadata');
     this.pendingOrders = this.table('pendingOrders');
     this.syncQueue = this.table('syncQueue');
     this.orderHistory = this.table('orderHistory');
+    this.weeklyTopProducts = this.table('weeklyTopProducts');
   }
 }
 

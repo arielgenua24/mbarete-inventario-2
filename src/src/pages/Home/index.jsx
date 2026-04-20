@@ -5,6 +5,7 @@ import { ShoppingCart, List, MessageSquare, Users, ChevronDown } from 'lucide-re
 import useFirestoreContext from '../../hooks/useFirestoreContext';
 import LoadingComponent from '../../components/Loading';
 import { forceSync } from '../../services/syncScheduler';
+import WeeklyTopGrid from '../../components/WeeklyTopGrid';
 import './styles.css';
 
 function Home() {
@@ -115,6 +116,9 @@ function Home() {
                     </button>
                 </div>
             )}
+
+            {/* ========== WEEKLY TOP GRID ========== */}
+            <WeeklyTopGrid />
 
             {/* ========== HOME CONTENT ========== */}
             <div className="home-content">

@@ -336,7 +336,7 @@ const useFirestore = () => {
     if (period === 'weekly') {
       startDate.setDate(startDate.getDate() - 7);
     } else if (period === 'monthly') {
-      startDate.setDate(startDate.getDate() - 30);
+      startDate.setDate(1); // first day of the current calendar month
     }
 
     try {

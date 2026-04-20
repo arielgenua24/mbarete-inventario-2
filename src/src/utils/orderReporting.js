@@ -59,11 +59,11 @@ export function filterOrdersByPeriod(orders, period, referenceDate = new Date())
   }
 
   if (period === REPORT_PERIODS.MONTHLY) {
-    const monthAgo = new Date(today);
-    monthAgo.setDate(monthAgo.getDate() - 30);
+    const monthStart = new Date(today);
+    monthStart.setDate(1); // first day of the current calendar month
     return orders.filter((order) => {
       const orderDate = getOrderDate(order);
-      return orderDate && orderDate >= monthAgo;
+      return orderDate && orderDate >= monthStart;
     });
   }
 

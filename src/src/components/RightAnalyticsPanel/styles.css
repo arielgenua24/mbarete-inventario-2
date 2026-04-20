@@ -42,6 +42,15 @@
   margin-bottom: 4px;
 }
 
+.rap-cache-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--rap-mute);
+  margin-top: 6px;
+  opacity: 0.75;
+}
+
 .rap-header-title {
   font-size: 22px;
   font-weight: 700;

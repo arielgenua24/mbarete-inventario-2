@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import useFirestoreContext from './useFirestoreContext';
+import { getWithTTL, setWithTTL, monthKey, TTL_1H } from '../utils/cache';
 
 const LOW_STOCK_THRESHOLD = 5;
+const TTL_2H = 2 * TTL_1H;
 
 export function useDesktopAnalytics() {
   const { getOrdersForInboxPeriod, getAllProducts } = useFirestoreContext();
   const [monthlyOrders, setMonthlyOrders] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cachedAt, setCachedAt] = useState(null);
   const fetchedRef = useRef(false);
 
   useEffect(() => {
@@ -16,12 +19,31 @@ export function useDesktopAnalytics() {
 
     (async () => {
       try {
-        const [orders, products] = await Promise.all([
-          getOrdersForInboxPeriod('monthly'),
-          getAllProducts(),
-        ]);
+        const ordersKey = monthKey('mb_ttl_rap_orders_v2');
+        const productsKey = 'mb_ttl_rap_products';
+
+        const cachedOrders = getWithTTL(ordersKey);
+        const cachedProducts = getWithTTL(productsKey);
+
+        const fetchOrders = cachedOrders
+          ? Promise.resolve(cachedOrders.data)
+          : getOrdersForInboxPeriod('monthly').then(data => {
+              setWithTTL(ordersKey, data, TTL_2H);
+              return data;
+            });
+
+        const fetchProducts = cachedProducts
+          ? Promise.resolve(cachedProducts.data)
+          : getAllProducts().then(data => {
+              setWithTTL(productsKey, data, TTL_2H);
+              return data;
+            });
+
+        const [orders, products] = await Promise.all([fetchOrders, fetchProducts]);
         setMonthlyOrders(orders);
         setAllProducts(products);
+        // Use the orders cache timestamp if available, otherwise mark as just fetched
+        setCachedAt(cachedOrders?.cachedAt ?? Date.now());
       } catch (e) {
         console.error('[DesktopAnalytics] fetch error:', e);
       } finally {
@@ -53,7 +75,8 @@ export function useDesktopAnalytics() {
     monthlyOrders.forEach(order => {
       (order.products || []).forEach(item => {
         const id = item.productId;
-        const name = item.productSnapshot?.name;
+        // Fall back to catalog lookup when snapshot is missing the name
+        const name = item.productSnapshot?.name || (id && productById[id]?.name) || null;
         const key = name || id;
         if (!key) return;
         const qty = Number(item.quantity) || Number(item.stock) || 1;
@@ -142,5 +165,5 @@ export function useDesktopAnalytics() {
     return result.slice(0, 8);
   }, [salesByProduct]);
 
-  return { loading, top5, bottom5, lowStock, pareto };
+  return { loading, cachedAt, top5, bottom5, lowStock, pareto };
 }
