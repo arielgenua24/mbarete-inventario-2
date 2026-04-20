@@ -24,141 +24,187 @@ function QRmodal({ QRcode, setQRcode, orderCode }) {
 
 
   const downloadPDF = async () => {
-    const pdf = new jsPDF();
     const canvases = document.querySelectorAll('.qr-canvas');
 
     if (orderCode) {
-      const productsByOrder = await getProductsByOrder(QRcode.id);
-
-      // ... código existente para detalles del pedido y QR ...
-      let yPos = 10;
-      const detailLines = [
-        `FECHA: ${QRcode.fecha}`,
-        `Pedido de: ${QRcode.cliente}`,
-        `Dirección: ${QRcode.direccion}`,
-        `Teléfono: ${QRcode.telefono}`,
-        `Código de Pedido: ${QRcode.orderCode}`,
-
-      ];
-
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(15, yPos + 10, detailLines[0]);
-      detailLines.slice(1).forEach((line, lineIndex) => {
-        pdf.text(15, yPos + 17 + (lineIndex * 6), line);
-      });
-
-      const imgData = canvases[0].toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 150, yPos + 20, 40, 40);
-
-      // Posición inicial después del QR y detalles
-      yPos = 70 + 40; // 70 (final del QR) + 40px de margen
-
-      // Estilo para sección de productos
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(0, 51, 102); // Azul corporativo
-      pdf.text(15, yPos, 'PRODUCTOS COMPRADOS');
-      yPos += 15;
-
-      // Contenedor principal de productos
-      pdf.setTextColor(0, 51, 102); // Azul corporativo
-      pdf.setLineWidth(0.5);
-
-      productsByOrder.forEach((product) => {
-        // Agregar página nueva si es necesario
-        if (yPos > 250) {
-          pdf.addPage();
-          yPos = 20;
-        }
-
-        // Tarjeta de producto
-        pdf.rect(15, yPos, 180, 30); // Borde del contenedor
-
-        // Encabezado del producto
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(0, 51, 102); // Azul corporativo
-        pdf.setLineWidth(0.5);
-        pdf.text(20, yPos + 8, product.productSnapshot.name);
-
-        // Detalles en 2 columnas
-        const col1 = 20;
-        const col2 = 110;
-
-        // Columna izquierda
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(col1, yPos + 16, `Detalles: ${product.productSnapshot.details || 'Sin detalles'}`);
-        // Show selected variants if they exist
-        if (product.selectedVariants?.color) {
-          pdf.text(col1, yPos + 22, `Color: ${product.selectedVariants.color}`);
-        }
-        if (product.selectedVariants?.size) {
-          pdf.text(col1, yPos + (product.selectedVariants?.color ? 28 : 22), `Talla: ${product.selectedVariants.size}`);
-        }
-
-        // Columna derecha
-        pdf.text(col2, yPos + 16, `Precio unitario: $${formatPrice(product.productSnapshot.price)}`);
-        pdf.text(col2, yPos + 22, `Cantidad: ${product.stock}`);
-
-        // Línea separadora
-        pdf.setDrawColor(200, 200, 200);
-        pdf.line(15, yPos + 28, 195, yPos + 28);
-
-        // Código de producto
-        pdf.setFontSize(9);
-        pdf.setTextColor(128, 128, 128);
-        pdf.text(18, yPos + 26, `SKU: ${product.productSnapshot.productCode}`);
-
-        yPos += 35; // Espacio entre productos
-      });
-
-      // Calcular total
-      const total = productsByOrder.reduce((sum, product) => {
-        return sum + (Number(product.productSnapshot.price) * product.stock);
-      }, 0);
-
-      // Espacio después de productos
-      yPos += 20;
-
-      // Sección Total
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(26, 35, 126); // Azul oscuro elegante
-      pdf.text(15, yPos, `TOTAL: $${formatPrice(total)}`);
-
-      // Línea decorativa
-      pdf.setDrawColor(189, 189, 189); // Gris suave
-      pdf.line(15, yPos + 8, 195, yPos + 8);
-
-      // Mensaje de agradecimiento
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'italic');
-      pdf.setTextColor(216, 27, 96); // Rosa chic
-      pdf.text(
-        "Gracias por comprar en Mbarete",
-        pdf.internal.pageSize.width / 2,
-        yPos + 25,
-        { align: 'center' }
-      );
-
-
-      // Función para formatear precios
       function formatPrice(price) {
         return Number(price).toLocaleString('es-AR');
       }
+
+      const productsByOrder = await getProductsByOrder(QRcode.id);
+      const total = productsByOrder.reduce((sum, p) => sum + (Number(p.productSnapshot.price) * p.stock), 0);
+
+      const qrCanvas = canvases[0];
+      const qrDataUrl = qrCanvas ? qrCanvas.toDataURL('image/png') : '';
+
+      const productRows = productsByOrder.map(p => {
+        const variantParts = [];
+        if (p.selectedVariants?.color) variantParts.push(`Color: ${p.selectedVariants.color}`);
+        if (p.selectedVariants?.size) variantParts.push(`Talle: ${p.selectedVariants.size}`);
+        const variantText = variantParts.join(' · ') || (p.productSnapshot.details || '');
+        const lineTotal = Number(p.productSnapshot.price) * p.stock;
+        return `
+          <tr>
+            <td style="padding:14px 12px;vertical-align:top;border-bottom:1px solid #e5e5e5;">
+              <div style="font-size:14px;font-weight:600;color:#3a3835;line-height:1.3;margin-bottom:3px;">${p.productSnapshot.name}</div>
+              ${variantText ? `<div style="font-size:12px;color:#999;line-height:1.4;">${variantText}</div>` : ''}
+              <span style="display:inline-block;margin-top:5px;background:#f5f4f2;border:1px solid #e5e5e5;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:10px;color:#5a5a5a;">#${p.productSnapshot.productCode}</span>
+            </td>
+            <td style="padding:14px 12px;font-size:14px;color:#5a5a5a;border-bottom:1px solid #e5e5e5;vertical-align:top;">${p.selectedVariants?.size || 'Sin talle'}</td>
+            <td style="padding:14px 12px;font-size:14px;font-weight:500;color:#5a5a5a;text-align:center;border-bottom:1px solid #e5e5e5;vertical-align:top;">${p.stock}</td>
+            <td style="padding:14px 12px;font-size:14px;font-weight:500;color:#5a5a5a;text-align:right;border-bottom:1px solid #e5e5e5;vertical-align:top;">$${formatPrice(p.productSnapshot.price)}</td>
+            <td style="padding:14px 12px;font-size:14px;font-weight:700;color:#3a3835;text-align:right;border-bottom:1px solid #e5e5e5;vertical-align:top;">$${formatPrice(lineTotal)}</td>
+          </tr>`;
+      }).join('');
+
+      const subtotal = total;
+
+      const invoiceHTML = `
+        <div style="width:794px;background:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;border-radius:6px;">
+
+          <!-- HEADER -->
+          <div style="background:#efefef;padding:28px 36px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="font-size:30px;font-weight:700;color:#000;letter-spacing:-0.5px;line-height:1;">Mbar<span style="color:#e07b2a;">e</span>te</div>
+              <div style="font-size:11px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:#969696;margin-top:2px;">Comprobante de compra</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#404040;font-weight:500;">Código de Pedido</div>
+              <div style="font-family:monospace;font-size:15px;color:#282828;font-weight:500;margin-top:3px;">${QRcode.orderCode}</div>
+              <div style="font-size:12px;color:#2c2c2c;margin-top:2px;">${QRcode.fecha}</div>
+            </div>
+          </div>
+
+          <!-- ORANGE BAND -->
+          <div style="height:3px;background:linear-gradient(90deg,#e07b2a 0%,#f5c87a 50%,#e07b2a 100%);"></div>
+
+          <!-- CLIENT + QR -->
+          <div style="padding:28px 36px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:start;border-bottom:1px solid #e5e5e5;background:#fafaf9;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 24px;">
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#999;">Cliente</span>
+                <span style="font-size:14px;font-weight:500;color:#3a3835;">${QRcode.cliente || 'Cliente sin nombre'}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#999;">Teléfono</span>
+                <span style="font-size:14px;font-weight:500;color:#3a3835;">${QRcode.telefono || 'Sin teléfono'}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:2px;grid-column:1/-1;">
+                <span style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#999;">Dirección de entrega</span>
+                <span style="font-size:14px;font-weight:500;color:#3a3835;">${QRcode.direccion || 'Sin dirección'}</span>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+              ${qrDataUrl ? `<img src="${qrDataUrl}" style="width:88px;height:88px;display:block;border:1px solid #e5e5e5;border-radius:6px;padding:4px;background:#fff;" />` : ''}
+              <div style="font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#999;text-align:center;">Escanear pedido</div>
+            </div>
+          </div>
+
+          <!-- PRODUCTS -->
+          <div style="padding:0 36px 28px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:20px 0 14px;border-bottom:1.5px solid #2c2a26;margin-bottom:0;">
+              <div style="width:6px;height:6px;background:#e07b2a;border-radius:50%;flex-shrink:0;"></div>
+              <h2 style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2c2a26;margin:0;">Productos comprados</h2>
+            </div>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr style="background:#fff;border-bottom:1px solid #e5e5e5;">
+                  <th style="padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#999;text-align:left;width:42%;">Producto</th>
+                  <th style="padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#999;text-align:left;width:22%;">Talle</th>
+                  <th style="padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#999;text-align:center;width:12%;">Cant.</th>
+                  <th style="padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#999;text-align:right;width:12%;">P. Unit.</th>
+                  <th style="padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#999;text-align:right;width:12%;">Total</th>
+                </tr>
+              </thead>
+              <tbody>${productRows}</tbody>
+            </table>
+          </div>
+
+          <!-- TOTALS -->
+          <div style="display:flex;justify-content:flex-end;padding:20px 36px 28px;border-top:1px solid #e5e5e5;background:#fafaf9;">
+            <div style="width:260px;display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                <span style="font-size:12px;color:#999;font-weight:500;">Subtotal</span>
+                <span style="font-size:12px;color:#5a5a5a;font-weight:500;">$${formatPrice(subtotal)}</span>
+              </div>
+              <div style="border-top:1.5px solid #2c2a26;margin-top:6px;padding-top:10px;display:flex;justify-content:space-between;align-items:baseline;">
+                <span style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2c2a26;">Total</span>
+                <span style="font-size:22px;font-weight:700;color:#2c2a26;line-height:1;">$${formatPrice(total)}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- FOOTER -->
+          <div style="background:#efefef;padding:20px 36px;display:flex;align-items:center;justify-content:space-between;gap:20px;">
+            <div style="font-size:13px;font-style:italic;color:#000;font-weight:400;">
+              Gracias por comprar en <strong style="color:#000;font-style:normal;font-weight:600;">Mbarete</strong> — esperamos verte pronto.
+            </div>
+            <div style="font-size:10px;color:#000;letter-spacing:0.5px;text-align:right;line-height:1.5;">
+              Documento generado automáticamente<br/>
+              Conserve este comprobante
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      const container = document.createElement('div');
+      container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;z-index:-1;';
+      container.innerHTML = invoiceHTML;
+      document.body.appendChild(container);
+
+      try {
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          width: 794,
+          backgroundColor: '#ffffff',
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgHeightMm = (canvas.height / canvas.width) * pdfWidth;
+
+        if (imgHeightMm <= pdfHeight) {
+          pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeightMm);
+        } else {
+          // Multi-page if invoice is very long
+          let yOffset = 0;
+          const pageHeightPx = canvas.width * (pdfHeight / pdfWidth);
+          while (yOffset < canvas.height) {
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = Math.min(pageHeightPx, canvas.height - yOffset);
+            const ctx = pageCanvas.getContext('2d');
+            ctx.drawImage(canvas, 0, -yOffset);
+            const pageData = pageCanvas.toDataURL('image/jpeg', 0.95);
+            const pageImgH = (pageCanvas.height / pageCanvas.width) * pdfWidth;
+            pdf.addImage(pageData, 'JPEG', 0, 0, pdfWidth, pageImgH);
+            yOffset += pageHeightPx;
+            if (yOffset < canvas.height) pdf.addPage();
+          }
+        }
+
+        pdf.save(`Factura-${QRcode.orderCode || QRcode.id}.pdf`);
+      } finally {
+        document.body.removeChild(container);
+      }
+
     } else {
-      // Sin orderCode: queremos 12 QR organizados en 4 filas x 3 columnas
-      const columns = 3;       // 3 columnas
-      const cellWidth = 60;    // Ancho de cada celda
-      const cellHeight = 60;   // Alto de cada celda
-      const marginX = 10;      // Margen horizontal
-      const marginY = 10;      // Margen vertical
+      // Sin orderCode: 12 QR en 4 filas x 3 columnas
+      const pdf = new jsPDF();
+      const columns = 3;
+      const cellWidth = 60;
+      const cellHeight = 60;
+      const marginX = 10;
+      const marginY = 10;
 
       canvases.forEach((c, index) => {
-        const col = index % columns;             // Columna: 0, 1, 2
-        const row = Math.floor(index / columns);   // Fila: 0 a 3 (4 filas en total)
+        const col = index % columns;
+        const row = Math.floor(index / columns);
         const xPos = marginX + col * cellWidth;
         const yPos = marginY + row * cellHeight;
 
@@ -173,9 +219,9 @@ function QRmodal({ QRcode, setQRcode, orderCode }) {
         const imgData = c.toDataURL('image/png');
         pdf.addImage(imgData, 'PNG', xQr, yQr, qrSize, qrSize);
       });
-    }
 
-    pdf.save('Etiquetas-QR.pdf');
+      pdf.save('Etiquetas-QR.pdf');
+    }
   };
 
 
