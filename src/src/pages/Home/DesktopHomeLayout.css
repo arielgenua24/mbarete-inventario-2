@@ -1,0 +1,52 @@
+/* =====================================================
+   DESKTOP HOME LAYOUT — 3-column shell
+   Left: 200px (#ede8df) | Center: flex-1 | Right: 340px (#1c1c1e)
+   ===================================================== */
+
+.dhl-root {
+  display: flex;
+  flex-direction: row;
+  /* Bleed edge-to-edge within #root's 2rem padding */
+  margin: -2rem;
+  height: calc(100vh);
+  overflow: hidden;
+  background-color: #f3eee6;
+}
+
+/* ── Center column ─────────────────────────────── */
+.dhl-center {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #f3eee6;
+  scrollbar-width: none;
+}
+
+.dhl-center::-webkit-scrollbar {
+  display: none;
+}
+
+/* Neutralize the home page's margin: -2rem bleed inside center */
+.dhl-center .home-page {
+  margin: 0;
+  min-height: 100%;
+}
+
+/* Constrain home cards to a readable max-width (centered) */
+.dhl-center .home-container {
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Welcome section fills center width naturally */
+.dhl-center .welcome-section {
+  width: 100%;
+}
+
+/* Constrain welcome content width to not stretch too wide */
+.dhl-center .welcome-content {
+  max-width: 400px;
+  width: 100%;
+}

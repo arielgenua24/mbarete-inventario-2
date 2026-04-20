@@ -17,6 +17,7 @@ import { initializeSyncScheduler } from './services/syncScheduler';
 import { startSyncWorker } from './services/syncWorker';
 
 // Lazy load de páginas
+const DesktopHomeLayout = lazy(() => import('./pages/Home/DesktopHomeLayout'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Orders = lazy(() => import('./pages/Orders'));
@@ -41,8 +42,8 @@ const SoldProductsDetail = lazy(() => import('./pages/SoldProducts/Detail'));
 
 function AppRouter() {
   let router = useRoutes([
-    { path: '/', element: <Home /> },
-    { path: '/home', element: <Home /> },
+    { path: '/', element: <DesktopHomeLayout><Home /></DesktopHomeLayout> },
+    { path: '/home', element: <DesktopHomeLayout><Home /></DesktopHomeLayout> },
     { path: '/inventory', element: <Inventory /> },
     { path: '/cart', element: <Cart /> },
     { path: '/product/:id', element: <Product /> },

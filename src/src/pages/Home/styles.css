@@ -50,9 +50,9 @@
 
 /* Title — Apple Title1: tight tracking, strong weight */
 .welcome-title {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 700;
-    color: #1D1D1F;
+    color: #fd730d;
     text-align: center;
     line-height: 1.25;
     letter-spacing: -0.5px;
@@ -71,8 +71,8 @@
 
 /* ---- Illustration ---- */
 .welcome-icon-placeholder {
-    width: 130px;
-    height: 130px;
+    width: 230px;
+    height: 230px;
     flex-shrink: 0;
     background: transparent;
     display: flex;
@@ -93,7 +93,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 16px;                /* 8pt × 2 */
+    gap: 16px;
+    margin-left: -28px;
 }
 
 /* Greeting row: "Hola Majo!" left · red dot right */
@@ -106,9 +107,9 @@
 }
 
 .welcome-greeting {
-    font-size: 22px;
+    font-size: 49px;
     font-weight: 800;
-    color: #ffffff;
+    color: #ff990a;
     letter-spacing: -0.4px;
     line-height: 1.1;
 }
